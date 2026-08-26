@@ -5,62 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Stock Opname</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-box {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 350px;
-        }
-        .login-box h1 {
-            font-size: 22px;
-            margin-bottom: 20px;
-            color: #333;
-            text-align: center;
-        }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #666;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #004494;
-        }
-        #message {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 14px;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; }
+        .login-box h1 { font-size: 22px; margin-bottom: 20px; color: #333; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; color: #666; }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #004494; }
+        #message { margin-top: 15px; text-align: center; font-size: 14px; }
         .success { color: green; }
         .error { color: red; }
         .loading { color: #555; }
@@ -70,10 +23,7 @@
 
     <div class="login-box">
         <h1>Login Stock Opname</h1>
-        
-        <!-- Tempat menampilkan pesan error/sukses -->
         <div id="message"></div>
-
         <form id="loginForm">
             <div class="input-group">
                 <label for="username">Username</label>
@@ -88,8 +38,8 @@
     </div>
 
     <script>
-        // GANTI URL INI dengan URL hasil Deploy Web App Anda (harus berakhiran /exec)
-        const scriptURL = 'https://script.google.com/macros/s/AKfycb.../exec';
+        // ⚠️ GANTI URL INI DENGAN URL HASIL DEPLOY TERBARU (harus berakhiran /exec)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxNNXujJG5LJCQHdksP8WBJWtxcQ_gZUg9Ju5k3DOASxAnqkqZ2jgrSKcNE31Ij2ijegw/exec';
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -99,12 +49,10 @@
             const messageDiv = document.getElementById('message');
             const submitBtn = document.getElementById('submitBtn');
 
-            // Reset pesan dan nonaktifkan tombol
             messageDiv.className = 'loading';
             messageDiv.textContent = "Sedang menghubungi server...";
             submitBtn.disabled = true;
 
-            // Menggunakan URLSearchParams untuk menghindari CORS Preflight & Error 302
             const formData = new URLSearchParams();
             formData.append('username', username);
             formData.append('password', password);
@@ -112,9 +60,13 @@
             try {
                 const response = await fetch(scriptURL, {
                     method: 'POST',
-                    // PENTING: JANGAN gunakan 'Content-Type': 'application/json' agar GAS tidak redirect (Error 302)
                     body: formData 
                 });
+
+                // Cek apakah response sukses (status 200)
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status} (Pastikan URL sudah benar dan deploy akses 'Anyone')`);
+                }
 
                 const data = await response.json();
 
@@ -122,23 +74,22 @@
                     messageDiv.className = 'success';
                     messageDiv.textContent = "Login Berhasil!";
                     
-                    // Simpan role di localStorage (bisa digunakan untuk redirect halaman)
                     localStorage.setItem('userRole', data.role);
                     localStorage.setItem('username', username);
+                    localStorage.setItem('userDepo', data.depo || '');
                     
                     console.log("Role:", data.role);
-                    // Contoh Redirect: 
                     window.location.href = "dashboard.html"; 
                     
                 } else {
                     messageDiv.className = 'error';
-                    messageDiv.textContent = data.message; // Pesan dari GAS
+                    messageDiv.textContent = data.message;
                 }
 
             } catch (error) {
                 console.error('Error:', error);
                 messageDiv.className = 'error';
-                messageDiv.textContent = "Gagal terhubung ke server: Periksa URL atau koneksi internet.";
+                messageDiv.textContent = error.message || "Gagal terhubung ke server.";
             } finally {
                 submitBtn.disabled = false;
             }
