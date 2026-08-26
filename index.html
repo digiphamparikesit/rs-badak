@@ -56,6 +56,10 @@
         button:hover {
             background-color: #004494;
         }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
         #message {
             margin-top: 15px;
             text-align: center;
@@ -70,7 +74,7 @@
 
     <div class="login-box">
         <h1>Login Stock Opname</h1>
-        
+
         <!-- Tempat menampilkan pesan error/sukses -->
         <div id="message"></div>
 
@@ -93,79 +97,81 @@
         // Salin dari dialog "Kelola deployment" -> Aplikasi web -> URL
         // ==========================================================
         const scriptURL = 'https://script.google.com/macros/s/AKfycby9gI622UEI67Eo21xWWENF51MKsFtPy0MVrF3_JTfNy-oDBQeRVeCTJGmhtCMUBWyjbA/exec';
-        
-        // Proxy Cadangan untuk mengatasi redirect internal GAS yang memblokir CORS
+
+        // Proxy cadangan (hanya dipakai sebagai upaya TERAKHIR, mode GET)
         const proxyURL = 'https://api.allorigins.win/raw?url=';
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        // Helper: kirim request dan parse JSON, kembalikan null jika gagal
+        // (tidak throw, supaya alur fallback berikutnya tetap bisa jalan)
+        async function tryFetchJson(url, options) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) return null;
+                return await response.json();
+            } catch (err) {
+                console.warn('Percobaan fetch gagal:', err);
+                return null;
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
             const messageDiv = document.getElementById('message');
             const submitBtn = document.getElementById('submitBtn');
 
-            // Reset pesan dan nonaktifkan tombol
             messageDiv.className = 'loading';
-            messageDiv.textContent = "Sedang menghubungi server...";
+            messageDiv.textContent = 'Sedang menghubungi server...';
             submitBtn.disabled = true;
 
-            // Menggunakan URLSearchParams untuk menghindari Preflight CORS
+            let data = null;
+
+            // 1) Coba POST langsung ke Apps Script
             const formData = new URLSearchParams();
+            formData.append('action', 'login');
             formData.append('username', username);
             formData.append('password', password);
 
-            try {
-                // 1. Coba fetch langsung ke Google Apps Script
-                let response = await fetch(scriptURL, {
-                    method: 'POST',
-                    body: formData 
-                });
+            data = await tryFetchJson(scriptURL, { method: 'POST', body: formData });
 
-                // 2. Jika diblokir CORS (response opaque / error status), gunakan Proxy AllOrigins
-                if (!response.ok || response.type === 'opaque') {
-                   console.warn("Koneksi langsung diblokir CORS, mencoba jalur proxy...");
-                   response = await fetch(proxyURL + encodeURIComponent(scriptURL), { 
-                       method: 'POST', 
-                       // Header ini penting agar GAS mengenali data sebagai form-urlencoded
-                       headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-                       body: formData 
-                   });
-                }
+            // 2) Jika POST gagal (mis. diblokir CORS), coba GET langsung.
+            //    doGet() di server juga sudah mendukung action=login.
+            if (!data) {
+                const getUrl = `${scriptURL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+                data = await tryFetchJson(getUrl);
+            }
 
-                // Cek status HTTP
-                if (!response.ok) {
-                    throw new Error(`Server Error: ${response.status} (Pastikan akses Web App diset 'Siapa saja' dan URL /exec benar)`);
-                }
+            // 3) Upaya terakhir: lewat proxy AllOrigins (mode GET, lebih stabil
+            //    dibanding mode POST melalui proxy ini).
+            if (!data) {
+                const getUrl = `${scriptURL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+                data = await tryFetchJson(proxyURL + encodeURIComponent(getUrl));
+            }
 
-                // Ambil data JSON dari server
-                const data = await response.json();
+            submitBtn.disabled = false;
 
-                if (data.success) {
-                    messageDiv.className = 'success';
-                    messageDiv.textContent = "Login Berhasil!";
-                    
-                    // Simpan role dan username ke localStorage (untuk keperluan Dashboard)
-                    localStorage.setItem('userRole', data.role);
-                    localStorage.setItem('username', username);
-                    localStorage.setItem('userDepo', data.depo || '');
-                    
-                    // Redirect ke Dashboard setelah 1 detik
-                    setTimeout(() => {
-                        window.location.href = "dashboard.html"; 
-                    }, 1000);
-                    
-                } else {
-                    messageDiv.className = 'error';
-                    messageDiv.textContent = data.message || "Username atau password salah.";
-                }
-
-            } catch (error) {
-                console.error('Error detail:', error);
+            if (!data) {
                 messageDiv.className = 'error';
-                messageDiv.textContent = "Gagal terhubung. Periksa koneksi internet atau pastikan URL /exec sudah benar.";
-            } finally {
-                submitBtn.disabled = false;
+                messageDiv.textContent = 'Gagal terhubung ke server. Pastikan: (1) URL /exec sudah versi terbaru (redeploy setelah edit skrip), (2) akses web app diset "Siapa saja", (3) initSheet() sudah pernah dijalankan sekali di Apps Script.';
+                return;
+            }
+
+            if (data.success) {
+                messageDiv.className = 'success';
+                messageDiv.textContent = 'Login Berhasil!';
+
+                localStorage.setItem('userRole', data.role);
+                localStorage.setItem('username', data.username || username);
+                localStorage.setItem('userDepo', data.depo || '');
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+            } else {
+                messageDiv.className = 'error';
+                messageDiv.textContent = data.message || 'Username atau password salah.';
             }
         });
     </script>
