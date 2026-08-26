@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Opname Obat & BMHP - Login</title>
+    <style>
+        /* ============================================================
+           CSS GABUNGAN (login + aplikasi)
+           ============================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #1a202c;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 1500px;
+            width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        /* ========== LOGIN FORM ========== */
+        #loginContainer {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        #loginContainer h2 {
+            text-align: center;
+            margin-bottom: 24px;
+            color: #2b6cb0;
+        }
+        .login-group {
+            margin-bottom: 16px;
+        }
+        .login-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #4a5568;
+        }
+        .login-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .login-group input:focus {
+            outline: none;
+            border-color: #2b6cb0;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #2b6cb0;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .login-btn:hover { background: #1a4f8b; }
+        .login-error {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: center;
+        }
+        /* ========== APP STYLES (sama seperti sebelumnya) ========== */
+        .hidden { display: none !important; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            border-bottom: 3px solid #2b6cb0;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .header h1 { font-size: 24px; color: #2b6cb0; }
+        .header h1 small { font-size: 14px; font-weight: normal; color: #4a5568; }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: #2b6cb0; color: #fff; }
+        .btn-primary:hover { background: #1a4f8b; transform: translateY(-2px); }
+        .btn-success { background: #38a169; color: #fff; }
+        .btn-success:hover { background: #2f855a; transform: translateY(-2px); }
+        .btn-danger { background: #e53e3e; color: #fff; }
+        .btn-danger:hover { background: #c53030; }
+        .btn-warning { background: #d69e2e; color: #fff; }
+        .btn-warning:hover { background: #b7791f; }
+        .btn-secondary { background: #718096; color: #fff; }
+        .btn-secondary:hover { background: #4a5568; }
+        .btn-outline { background: transparent; color: #2b6cb0; border: 2px solid #2b6cb0; }
+        .btn-outline:hover { background: #2b6cb0; color: #fff; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; }
+        .filter-section {
+            background: #f7fafc;
+            padding: 16px 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-size: 13px; font-weight: 600; color: #4a5568; }
+        .filter-group select, .filter-group input {
+            padding: 8px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fff;
+            min-width: 160px;
+            transition: border-color 0.3s;
+        }
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #2b6cb0;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .card .label { font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card .value { font-size: 28px; font-weight: 700; color: #1a202c; margin-top: 4px; }
+        .card .value.green { color: #38a169; }
+        .card .value.blue { color: #2b6cb0; }
+        .card .value.orange { color: #d69e2e; }
+        .card .value.red { color: #e53e3e; }
+        .card .value.purple { color: #805ad5; }
+        .card .sub { font-size: 13px; color: #718096; margin-top: 4px; }
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 1000px; }
+        table thead { background: #edf2f7; }
+        table th {
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            background: #edf2f7;
+            z-index: 2;
+        }
+        table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+        table tr:hover { background: #f7fafc; }
+        table td input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            min-width: 60px;
+            transition: border-color 0.3s;
+            background: #fff;
+        }
+        table td input:focus {
+            outline: none;
+            border-color: #2b6cb0;
+        }
+        table td input.input-total {
+            font-weight: 700;
+            color: #2b6cb0;
+            background: #ebf8ff;
+            border-color: #bee3f8;
+        }
+        table td select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            background: #fff;
+        }
+        table td select:focus { outline: none; border-color: #2b6cb0; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-muted { color: #718096; font-size: 13px; }
+        .badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-obat { background: #bee3f8; color: #2b6cb0; }
+        .badge-bmhp { background: #fbd38d; color: #975a16; }
+        .badge-depo { background: #e9d8fd; color: #6b46c1; font-size: 10px; }
+        .loading { text-align: center; padding: 40px; color: #718096; }
+        .loading .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #2b6cb0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s;
+            max-width: 400px;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #38a169; }
+        .toast.error { background: #e53e3e; }
+        .toast.info { background: #2b6cb0; }
+        .col-action { min-width: 70px; }
+        .highlight-row { background: #ebf8ff !important; }
+        .print-title, .print-subtitle, .print-footer { display: none; }
+        @media print {
+            body { padding: 0; margin: 0; background: #fff; font-size: 11px; }
+            .container { max-width: 100%; padding: 15px 20px; border-radius: 0; box-shadow: none; }
+            .no-print { display: none !important; }
+            .header { border-bottom: 2px solid #2b6cb0; padding-bottom: 10px; margin-bottom: 14px; }
+            .header h1 { font-size: 18px; }
+            .filter-section { display: none !important; }
+            .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+            .card { padding: 10px 14px; border: 1px solid #cbd5e0; box-shadow: none; }
+            .card .value { font-size: 20px; }
+            .table-wrapper { border: 1px solid #cbd5e0; border-radius: 0; }
+            table { font-size: 10px; min-width: 100%; }
+            table th { padding: 6px 8px; background: #edf2f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            table td { padding: 5px 8px; }
+            table td input { border: none; padding: 2px 4px; font-size: 10px; background: transparent !important; min-width: 40px; }
+            table td input.input-total { background: transparent !important; border: none; font-weight: 700; }
+            table td select { border: none; background: transparent; font-size: 10px; -webkit-appearance: none; appearance: none; }
+            .badge { font-size: 9px; padding: 1px 8px; }
+            .badge-obat { background: #bee3f8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .badge-bmhp { background: #fbd38d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .badge-depo { background: #e9d8fd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .toast { display: none !important; }
+            @page { size: F4; margin: 15mm 20mm 15mm 20mm; }
+            .col-action { display: none !important; }
+            .print-title { display: block !important; text-align: center; font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #1a202c; }
+            .print-subtitle { display: block !important; text-align: center; font-size: 12px; color: #4a5568; margin-bottom: 14px; }
+            .print-footer { display: block !important; text-align: center; font-size: 10px; color: #718096; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 12px; }
+            .header h1 { font-size: 18px; }
+            .filter-section { flex-direction: column; align-items: stretch; }
+            .filter-group select, .filter-group input { min-width: 100%; }
+            .dashboard { grid-template-columns: repeat(2, 1fr); }
+            .card .value { font-size: 20px; }
+        }
+        @media (max-width: 480px) { .dashboard { grid-template-columns: 1fr; } }
+        .table-scroll { max-height: 500px; overflow-y: auto; position: relative; }
+        .table-scroll thead { position: sticky; top: 0; z-index: 3; }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        .user-info .role-badge {
+            background: #2b6cb0;
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    TOAST NOTIFICATION
+    ============================================================ -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ============================================================
+    LOGIN CONTAINER
+    ============================================================ -->
+    <div id="loginContainer" class="container">
+        <h2>🔐 Login Stock Opname</h2>
+        <form id="loginForm" onsubmit="return false;">
+            <div class="login-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" placeholder="Masukkan username" required />
+            </div>
+            <div class="login-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Masukkan password" required />
+            </div>
+            <button type="button" class="login-btn" onclick="doLogin()">Masuk</button>
+            <div id="loginError" class="login-error"></div>
+        </form>
+    </div>
+
+    <!-- ============================================================
+    MAIN APP CONTAINER (sembunyi jika belum login)
+    ============================================================ -->
+    <div id="appContainer" class="container hidden">
+
+        <!-- HEADER -->
+        <div class="header">
+            <h1>📦 Stock Opname Obat & BMHP <small>- Multi Depo</small></h1>
+            <div class="header-actions no-print">
+                <span class="user-info" id="userInfo">
+                    <span id="userNameDisplay"></span>
+                    <span class="role-badge" id="userRoleDisplay"></span>
+                </span>
+                <button class="btn btn-danger" onclick="doLogout()">🚪 Logout</button>
+                <button class="btn btn-success" onclick="saveData()">💾 Simpan</button>
+                <button class="btn btn-primary" onclick="loadData()">🔄 Refresh</button>
+                <button class="btn btn-warning" onclick="exportExcel()">📊 Export Excel</button>
+                <button class="btn btn-secondary" onclick="printReport()">🖨️ Cetak</button>
+            </div>
+        </div>
+
+        <div class="print-title" id="printTitle">LAPORAN STOCK OPNAME OBAT & BMHP</div>
+        <div class="print-subtitle" id="printSubtitle">Periode & Depo</div>
+
+        <!-- FILTER -->
+        <div class="filter-section no-print">
+            <div class="filter-group">
+                <label>Depo</label>
+                <select id="filterDepo">
+                    <option value="">Semua Depo</option>
+                    <option value="Depo Farmasi IGD">IGD</option>
+                    <option value="Depo Farmasi Rawat Jalan">Rawat Jalan</option>
+                    <option value="Depo Farmasi Rawat Inap">Rawat Inap</option>
+                    <option value="Depo Farmasi IBS">IBS</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Bulan</label>
+                <select id="filterBulan">
+                    <option value="Januari">Januari</option><option value="Februari">Februari</option>
+                    <option value="Maret">Maret</option><option value="April">April</option>
+                    <option value="Mei">Mei</option><option value="Juni">Juni</option>
+                    <option value="Juli">Juli</option><option value="Agustus">Agustus</option>
+                    <option value="September">September</option><option value="Oktober">Oktober</option>
+                    <option value="November">November</option><option value="Desember">Desember</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Tahun</label>
+                <select id="filterTahun"></select>
+            </div>
+            <div class="filter-group">
+                <label>Kategori</label>
+                <select id="filterKategori">
+                    <option value="all">Semua</option>
+                    <option value="Obat">Obat</option>
+                    <option value="BMHP">BMHP</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Cari Item</label>
+                <input type="text" id="filterSearch" placeholder="Ketik nama/kode..." oninput="filterTable()" />
+            </div>
+            <div class="filter-group" style="justify-content:flex-end;">
+                <button class="btn btn-primary btn-sm" onclick="loadData()">Tampilkan</button>
+                <button class="btn btn-secondary btn-sm" onclick="addNewRow()">+ Tambah Item</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="dashboard" id="dashboard">
+            <div class="card"><div class="label">💰 Total Nilai</div><div class="value blue" id="totalNilai">Rp 0</div><div class="sub" id="totalItemLabel">0 item</div></div>
+            <div class="card"><div class="label">💊 Total Obat</div><div class="value green" id="totalObat">Rp 0</div></div>
+            <div class="card"><div class="label">🧪 Total BMHP</div><div class="value orange" id="totalBMHP">Rp 0</div></div>
+            <div class="card"><div class="label">📋 Jumlah Item</div><div class="value purple" id="totalItems">0</div><div class="sub" id="periodeLabel">-</div></div>
+        </div>
+
+        <!-- TABEL -->
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th style="min-width:40px;">No</th>
+                            <th style="min-width:80px;">Kode</th>
+                            <th style="min-width:150px;">Nama Item</th>
+                            <th style="min-width:80px;">Kategori</th>
+                            <th style="min-width:140px;">Depo</th>
+                            <th style="min-width:70px;">Satuan</th>
+                            <th style="min-width:80px;">Stok Awal</th>
+                            <th style="min-width:80px;">Stok Masuk</th>
+                            <th style="min-width:80px;">Stok Keluar</th>
+                            <th style="min-width:80px;">Stok Akhir</th>
+                            <th style="min-width:90px;">Harga Satuan</th>
+                            <th style="min-width:100px;">Total Nilai</th>
+                            <th class="col-action no-print">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="13" class="text-center text-muted" style="padding:40px;"><div class="loading"><div class="spinner"></div><p>Memuat data...</p></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="print-footer">Dicetak pada: <span id="printDate"></span> | Laporan Stock Opname</div>
+
+        <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #e2e8f0;">
+            <span class="text-muted" id="statusInfo">Siap</span>
+            <span class="text-muted" id="rowCount">0 item</span>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        // ============================================================
+        // KONFIGURASI
+        // ============================================================
+        const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwfbr7m6hYGLs1tLiy8J7MWyd_tD53tgknDXATaMMMYVF55_uuz8NxhoNyQDaYd2IKQjw/exec';
+        let API_URL = localStorage.getItem('stockOpnameApiUrl') || DEFAULT_API_URL;
+        let currentUser = null; // { username, role, depo }
+        let currentData = [];
+        const bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        const depoList = ['Depo Farmasi IGD', 'Depo Farmasi Rawat Jalan', 'Depo Farmasi Rawat Inap', 'Depo Farmasi IBS'];
+
+        // ============================================================
+        // INISIALISASI
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Isi tahun
+            const tahunSelect = document.getElementById('filterTahun');
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y;
+                if (y === currentYear) opt.selected = true;
+                tahunSelect.appendChild(opt);
+            }
+            document.getElementById('filterBulan').value = bulanList[new Date().getMonth()];
+
+            // Cek session login
+            const savedUser = localStorage.getItem('stockOpnameUser');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    // Verifikasi ulang ke server (opsional, bisa dilewati)
+                    showApp();
+                    loadData();
+                } catch(e) {
+                    localStorage.removeItem('stockOpnameUser');
+                }
+            }
+
+            // Event listener auto-calc
+            document.addEventListener('input', function(e) {
+                if (e.target.closest('#dataTable') && e.target.tagName === 'INPUT') {
+                    const row = e.target.closest('tr');
+                    if (row) {
+                        const inputs = row.querySelectorAll('input');
+                        if (inputs.length >= 4) {
+                            const sa = parseFloat(inputs[0].value) || 0;
+                            const sm = parseFloat(inputs[1].value) || 0;
+                            const sk = parseFloat(inputs[2].value) || 0;
+                            const akhir = sa + sm - sk;
+                            const harga = parseFloat(inputs[4].value) || 0;
+                            const total = akhir * harga;
+                            if (inputs[3]) { inputs[3].value = akhir.toFixed(2);
+                                inputs[3].dispatchEvent(new Event('change', {bubbles:true})); }
+                            if (inputs[5]) { inputs[5].value = total.toFixed(2);
+                                inputs[5].dispatchEvent(new Event('change', {bubbles:true})); }
+                            updateDashboard();
+                        }
+                    }
+                }
+            });
+
+            // Filter change events
+            document.getElementById('filterDepo').addEventListener('change', loadData);
+            document.getElementById('filterBulan').addEventListener('change', loadData);
+            document.getElementById('filterTahun').addEventListener('change', loadData);
+            document.getElementById('filterKategori').addEventListener('change', filterTable);
+
+            // Login dengan Enter
+            document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') doLogin();
+            });
+            document.getElementById('loginUsername').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') doLogin();
+            });
+        });
+
+        // ============================================================
+        // LOGIN / LOGOUT
+        // ============================================================
+        async function doLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const errorEl = document.getElementById('loginError');
+            if (!username || !password) {
+                errorEl.textContent = 'Username dan password harus diisi!';
+                return;
+            }
+            errorEl.textContent = '';
+
+            try {
+                const url = `${API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentUser = {
+                        username: result.username,
+                        role: result.role,
+                        depo: result.depo || ''
+                    };
+                    localStorage.setItem('stockOpnameUser', JSON.stringify(currentUser));
+                    showApp();
+                    loadData();
+                    showToast('Login berhasil! Selamat datang ' + username, 'success');
+                } else {
+                    errorEl.textContent = result.message || 'Login gagal';
+                }
+            } catch(err) {
+                errorEl.textContent = 'Error: ' + err.message;
+            }
+        }
+
+        function doLogout() {
+            localStorage.removeItem('stockOpnameUser');
+            currentUser = null;
+            document.getElementById('appContainer').classList.add('hidden');
+            document.getElementById('loginContainer').classList.remove('hidden');
+            showToast('Anda telah logout', 'info');
+        }
+
+        function showApp() {
+            document.getElementById('loginContainer').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            // Tampilkan info user
+            document.getElementById('userNameDisplay').textContent = currentUser.username;
+            document.getElementById('userRoleDisplay').textContent = currentUser.role === 'admin' ? 'Super Admin' : 'Depo';
+            // Set filter depo default untuk user depo
+            if (currentUser.role === 'depo' && currentUser.depo) {
+                document.getElementById('filterDepo').value = currentUser.depo;
+                document.getElementById('filterDepo').disabled = true; // user depo tidak bisa ganti depo
+            } else {
+                document.getElementById('filterDepo').disabled = false;
+            }
+        }
+
+        // ============================================================
+        // LOAD DATA (dengan filter depo otomatis)
+        // ============================================================
+        async function loadData() {
+            if (!currentUser) return;
+            const bulan = document.getElementById('filterBulan').value;
+            const tahun = document.getElementById('filterTahun').value;
+            let depo = document.getElementById('filterDepo').value;
+            // Jika user depo, paksa depo miliknya
+            if (currentUser.role === 'depo' && currentUser.depo) {
+                depo = currentUser.depo;
+                document.getElementById('filterDepo').value = depo;
+            }
+
+            showLoading(true);
+            document.getElementById('statusInfo').textContent = 'Memuat data...';
+            try {
+                let url = `${API_URL}?action=getData&bulan=${encodeURIComponent(bulan)}&tahun=${encodeURIComponent(tahun)}`;
+                if (depo) url += `&depo=${encodeURIComponent(depo)}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                if (result.error) { showToast('Error: '+result.error, 'error'); currentData=[]; renderTable([]); updateDashboard(); return; }
+                currentData = result.data || [];
+                renderTable(currentData);
+                updateDashboard();
+                document.getElementById('statusInfo').textContent = `Data ${bulan} ${tahun}${depo?' - '+depo:''} dimuat (${currentData.length} item)`;
+                document.getElementById('rowCount').textContent = `${currentData.length} item`;
+                document.getElementById('printSubtitle').textContent = `Periode: ${bulan} ${tahun}${depo?' | Depo: '+depo:' Semua Depo'}`;
+                document.getElementById('printDate').textContent = new Date().toLocaleString('id-ID');
+            } catch(err) { showToast('Gagal memuat: '+err.message, 'error'); }
+            showLoading(false);
+        }
+
+        // ============================================================
+        // RENDER TABLE (dengan pembatasan akses edit)
+        // ============================================================
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            const filterKategori = document.getElementById('filterKategori').value;
+            const filterSearch = document.getElementById('filterSearch').value.toLowerCase();
+            let filtered = data;
+            if (filterKategori !== 'all') filtered = filtered.filter(item => item.Kategori === filterKategori);
+            if (filterSearch) filtered = filtered.filter(item =>
+                (item.NamaItem||'').toLowerCase().includes(filterSearch) ||
+                (item.Kode||'').toLowerCase().includes(filterSearch)
+            );
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted" style="padding:30px;">${data.length===0?'Belum ada data. Klik "Tambah Item"':'Tidak ada yang cocok'}</td></tr>`;
+                return;
+            }
+            let html = '';
+            filtered.forEach((item, idx) => {
+                const kategori = item.Kategori || 'Obat';
+                const badgeKategori = kategori.toLowerCase() === 'obat' ? 'badge-obat' : 'badge-bmhp';
+                const depo = item.Depo || 'Depo Farmasi IGD';
+                // Cek apakah user boleh edit (admin atau depo yang sama)
+                const canEdit = (currentUser.role === 'admin' || (currentUser.role === 'depo' && currentUser.depo === depo));
+                const readonlyAttr = canEdit ? '' : 'readonly';
+                const disabledAttr = canEdit ? '' : 'disabled';
+                html += `
+                    <tr data-id="${item.ID||''}">
+                        <td class="text-center">${idx+1}</td>
+                        <td><input type="text" class="input-kode" value="${escapeHtml(item.Kode||'')}" style="min-width:70px;" ${readonlyAttr} onchange="updateField(this,'Kode')" /></td>
+                        <td><input type="text" class="input-nama" value="${escapeHtml(item.NamaItem||'')}" style="min-width:120px;" ${readonlyAttr} onchange="updateField(this,'NamaItem')" /></td>
+                        <td>
+                            <select class="input-kategori" onchange="updateField(this,'Kategori')" style="width:100%;padding:4px 6px;border:2px solid #e2e8f0;border-radius:6px;" ${disabledAttr}>
+                                <option value="Obat" ${kategori==='Obat'?'selected':''}>Obat</option>
+                                <option value="BMHP" ${kategori==='BMHP'?'selected':''}>BMHP</option>
+                            </select>
+                            <span class="badge ${badgeKategori}" style="display:none;">${kategori}</span>
+                        </td>
+                        <td>
+                            <select class="input-depo" onchange="updateField(this,'Depo')" style="width:100%;padding:4px 6px;border:2px solid #e2e8f0;border-radius:6px;" ${disabledAttr}>
+                                ${depoList.map(d => `<option value="${d}" ${d===depo?'selected':''}>${d.replace('Depo Farmasi ','')}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td><input type="text" class="input-satuan" value="${escapeHtml(item.Satuan||'')}" style="min-width:60px;" ${readonlyAttr} onchange="updateField(this,'Satuan')" /></td>
+                        <td><input type="number" class="input-stokawal" value="${item.StokAwal||0}" step="0.01" style="min-width:60px;" ${readonlyAttr} onchange="updateField(this,'StokAwal')" /></td>
+                        <td><input type="number" class="input-stokmasuk" value="${item.StokMasuk||0}" step="0.01" style="min-width:60px;" ${readonlyAttr} onchange="updateField(this,'StokMasuk')" /></td>
+                        <td><input type="number" class="input-stokkeluar" value="${item.StokKeluar||0}" step="0.01" style="min-width:60px;" ${readonlyAttr} onchange="updateField(this,'StokKeluar')" /></td>
+                        <td><input type="number" class="input-stokakhir" value="${item.StokAkhir||0}" step="0.01" style="min-width:60px;font-weight:600;" ${readonlyAttr} onchange="updateField(this,'StokAkhir')" /></td>
+                        <td><input type="number" class="input-harga" value="${item.HargaSatuan||0}" step="0.01" style="min-width:70px;" ${readonlyAttr} onchange="updateField(this,'HargaSatuan')" /></td>
+                        <td><input type="number" class="input-total" value="${item.TotalNilai||0}" step="0.01" style="min-width:80px;font-weight:700;background:#ebf8ff;" readonly /></td>
+                        <td class="col-action no-print">
+                            ${canEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteRow(this)" style="padding:2px 8px;font-size:11px;">✕</button>` : '<span class="text-muted">🔒</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+            // Event listener untuk auto-calc hanya jika editable
+            tbody.querySelectorAll('tr').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 6 && !inputs[0].hasAttribute('readonly')) {
+                    const sa = inputs[0], sm = inputs[1], sk = inputs[2], akhir = inputs[3], harga = inputs[4], total = inputs[5];
+                    const calc = () => {
+                        const a = parseFloat(sa.value)||0, m = parseFloat(sm.value)||0, k = parseFloat(sk.value)||0, h = parseFloat(harga.value)||0;
+                        const end = a + m - k;
+                        akhir.value = end.toFixed(2);
+                        total.value = (end * h).toFixed(2);
+                        updateDashboard();
+                    };
+                    sa.addEventListener('input', calc); sm.addEventListener('input', calc);
+                    sk.addEventListener('input', calc); harga.addEventListener('input', calc);
+                    calc();
+                }
+            });
+            document.getElementById('rowCount').textContent = `${filtered.length} item (dari ${data.length} total)`;
+        }
+
+        // ============================================================
+        // UPDATE FIELD (hanya jika user punya akses)
+        // ============================================================
+        function updateField(input, field) {
+            const row = input.closest('tr');
+            if (!row) return;
+            const id = row.dataset.id;
+            const item = currentData.find(d => d.ID === id);
+            if (item) {
+                let val = input.value;
+                if (['StokAwal','StokMasuk','StokKeluar','StokAkhir','HargaSatuan','TotalNilai'].includes(field)) {
+                    val = parseFloat(val) || 0;
+                }
+                item[field] = val;
+                if (['StokAwal','StokMasuk','StokKeluar','StokAkhir','HargaSatuan'].includes(field)) {
+                    const akhir = parseFloat(item.StokAkhir) || 0;
+                    const harga = parseFloat(item.HargaSatuan) || 0;
+                    item.TotalNilai = akhir * harga;
+                    const totalInput = row.querySelector('.input-total');
+                    if (totalInput) totalInput.value = item.TotalNilai.toFixed(2);
+                }
+                updateDashboard();
+            }
+        }
+
+        // ============================================================
+        // ADD NEW ROW (hanya admin atau depo yang sesuai)
+        // ============================================================
+        function addNewRow() {
+            if (!currentUser) return;
+            const bulan = document.getElementById('filterBulan').value;
+            const tahun = document.getElementById('filterTahun').value;
+            let defaultDepo = document.getElementById('filterDepo').value;
+            if (currentUser.role === 'depo' && currentUser.depo) {
+                defaultDepo = currentUser.depo;
+            } else if (!defaultDepo) {
+                defaultDepo = 'Depo Farmasi IGD';
+            }
+            // Cek apakah user boleh menambah di depo ini
+            if (currentUser.role === 'depo' && currentUser.depo !== defaultDepo) {
+                showToast('Anda tidak diizinkan menambah item di depo lain', 'error');
+                return;
+            }
+            const newItem = {
+                ID: `TEMP-${Date.now()}`,
+                Kode: `OBT-${String(currentData.length+1).padStart(3,'0')}`,
+                NamaItem: 'Item Baru',
+                Kategori: 'Obat',
+                Depo: defaultDepo,
+                Satuan: 'tablet',
+                StokAwal: 0, StokMasuk: 0, StokKeluar: 0, StokAkhir: 0, HargaSatuan: 0, TotalNilai: 0,
+                Bulan: bulan, Tahun: parseInt(tahun)
+            };
+            currentData.push(newItem);
+            renderTable(currentData);
+            updateDashboard();
+            showToast(`Item baru ditambahkan ke ${defaultDepo}`, 'info');
+            const tbody = document.getElementById('tableBody');
+            const lastRow = tbody.lastElementChild;
+            if (lastRow) { lastRow.scrollIntoView({behavior:'smooth', block:'center'}); lastRow.classList.add('highlight-row'); setTimeout(() => lastRow.classList.remove('highlight-row'), 2000); }
+        }
+
+        // ============================================================
+        // DELETE ROW (hanya admin atau depo yang sesuai)
+        // ============================================================
+        function deleteRow(btn) {
+            const row = btn.closest('tr');
+            if (!row) return;
+            const id = row.dataset.id;
+            const depo = row.querySelector('.input-depo')?.value || '';
+            // Cek izin
+            if (currentUser.role === 'depo' && currentUser.depo !== depo) {
+                showToast('Anda tidak diizinkan menghapus item di depo lain', 'error');
+                return;
+            }
+            if (!id || id.startsWith('TEMP-')) {
+                const idx = currentData.findIndex(d => d.ID === id);
+                if (idx > -1) { currentData.splice(idx, 1); renderTable(currentData); updateDashboard(); showToast('Item dihapus (lokal)', 'info'); }
+                return;
+            }
+            if (!confirm(`Hapus item "${row.querySelector('.input-nama')?.value || id}"?`)) return;
+            deleteFromServer(id);
+        }
+        async function deleteFromServer(id) {
+            if (!API_URL) return;
+            try {
+                const response = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({action:'delete', id:id}) });
+                const result = await response.json();
+                if (result.success) { showToast(result.message, 'success'); loadData(); }
+                else showToast('Gagal hapus: '+(result.error||''), 'error');
+            } catch(err) { showToast('Error: '+err.message, 'error'); }
+        }
+
+        // ============================================================
+        // SAVE DATA (hanya jika user punya akses)
+        // ============================================================
+        async function saveData() {
+            if (!currentUser) return;
+            const bulan = document.getElementById('filterBulan').value;
+            const tahun = document.getElementById('filterTahun').value;
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.querySelectorAll('tr');
+            const items = [];
+            let valid = true;
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const selectKategori = row.querySelector('.input-kategori');
+                const selectDepo = row.querySelector('.input-depo');
+                if (inputs.length >= 6) {
+                    const depo = selectDepo ? selectDepo.value : 'Depo Farmasi IGD';
+                    // Cek izin: user depo hanya boleh simpan data deponya
+                    if (currentUser.role === 'depo' && currentUser.depo !== depo) {
+                        valid = false;
+                        showToast('Anda tidak diizinkan menyimpan data di depo lain', 'error');
+                        return;
+                    }
+                    items.push({
+                        id: row.dataset.id || `TEMP-${Date.now()}-${Math.random()}`,
+                        kode: inputs[0]?.value || '',
+                        namaItem: inputs[1]?.value || '',
+                        kategori: selectKategori ? selectKategori.value : 'Obat',
+                        depo: depo,
+                        satuan: inputs[2]?.value || '',
+                        stokAwal: parseFloat(inputs[3]?.value) || 0,
+                        stokMasuk: parseFloat(inputs[4]?.value) || 0,
+                        stokKeluar: parseFloat(inputs[5]?.value) || 0,
+                        stokAkhir: parseFloat(inputs[6]?.value) || 0,
+                        hargaSatuan: parseFloat(inputs[7]?.value) || 0,
+                        totalNilai: parseFloat(inputs[8]?.value) || 0
+                    });
+                }
+            });
+            if (!valid) return;
+            if (items.length === 0) { showToast('Tidak ada data', 'error'); return; }
+            showLoading(true);
+            document.getElementById('statusInfo').textContent = 'Menyimpan data...';
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ action: 'save', bulan, tahun: parseInt(tahun), items })
+                });
+                const result = await response.json();
+                if (result.success) { showToast(result.message, 'success'); loadData(); }
+                else showToast('Gagal simpan: '+(result.error||''), 'error');
+            } catch(err) { showToast('Error: '+err.message, 'error'); }
+            showLoading(false);
+        }
+
+        // ============================================================
+        // DASHBOARD, EXPORT, PRINT, FILTER (tidak berubah)
+        // ============================================================
+        function updateDashboard() {
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.querySelectorAll('tr');
+            let totalNilai=0, totalObat=0, totalBMHP=0, count=0;
+            rows.forEach(row => {
+                const totalInput = row.querySelector('.input-total');
+                const selectKategori = row.querySelector('.input-kategori');
+                if (totalInput) {
+                    const val = parseFloat(totalInput.value) || 0;
+                    totalNilai += val; count++;
+                    const kategori = selectKategori ? selectKategori.value : 'Obat';
+                    if (kategori.toLowerCase() === 'obat') totalObat += val;
+                    else if (kategori.toLowerCase() === 'bmhp') totalBMHP += val;
+                }
+            });
+            const bulan = document.getElementById('filterBulan').value;
+            const tahun = document.getElementById('filterTahun').value;
+            document.getElementById('totalNilai').textContent = formatRupiah(totalNilai);
+            document.getElementById('totalObat').textContent = formatRupiah(totalObat);
+            document.getElementById('totalBMHP').textContent = formatRupiah(totalBMHP);
+            document.getElementById('totalItems').textContent = count;
+            document.getElementById('totalItemLabel').textContent = `${count} item`;
+            document.getElementById('periodeLabel').textContent = `${bulan} ${tahun}`;
+        }
+
+        function exportExcel() {
+            if (currentData.length === 0) { showToast('Tidak ada data', 'error'); return; }
+            const headers = ['No','Kode','Nama Item','Kategori','Depo','Satuan','Stok Awal','Stok Masuk','Stok Keluar','Stok Akhir','Harga Satuan','Total Nilai'];
+            const rows = [headers];
+            currentData.forEach((item, idx) => {
+                rows.push([
+                    idx+1, item.Kode||'', item.NamaItem||'', item.Kategori||'',
+                    item.Depo||'Depo Farmasi IGD', item.Satuan||'',
+                    item.StokAwal||0, item.StokMasuk||0, item.StokKeluar||0,
+                    item.StokAkhir||0, item.HargaSatuan||0, item.TotalNilai||0
+                ]);
+            });
+            let csv = '';
+            rows.forEach(row => { csv += row.map(c => typeof c === 'string' && (c.includes(',')||c.includes('"')||c.includes('\n')) ? `"${c.replace(/"/g,'""')}"` : c).join(',') + '\n'; });
+            const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const bulan = document.getElementById('filterBulan').value;
+            const tahun = document.getElementById('filterTahun').value;
+            link.download = `Laporan Stock Opname ${bulan} ${tahun}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+            showToast(`Export berhasil: ${currentData.length} item`, 'success');
+        }
+
+        function printReport() {
+            if (currentData.length === 0) { showToast('Tidak ada data', 'error'); return; }
+            const bulan = document.getElementById('filterBulan').value;
+            const tahun = document.getElementById('filterTahun').value;
+            const depo = document.getElementById('filterDepo').value;
+            document.getElementById('printTitle').textContent = `LAPORAN STOCK OPNAME OBAT & BMHP`;
+            document.getElementById('printSubtitle').textContent = `Periode: ${bulan} ${tahun}${depo?' | Depo: '+depo:' | Semua Depo'}`;
+            document.getElementById('printDate').textContent = `Dicetak: ${new Date().toLocaleString('id-ID')}`;
+            window.print();
+        }
+
+        function filterTable() { renderTable(currentData); }
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function formatRupiah(val) { return 'Rp ' + Number(val).toLocaleString('id-ID'); }
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        function showToast(msg, type='info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg; toast.className = `toast ${type}`; toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+        function showLoading(show) { document.getElementById('statusInfo').textContent = show ? '⏳ Memuat...' : 'Siap'; }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveData(); }
+            if (e.ctrlKey && e.shiftKey && e.key === 'R') { e.preventDefault(); loadData(); }
+        });
+        console.log('📦 Aplikasi Stock Opname Multi-Depo dengan Login siap!');
+    </script>
+</body>
+</html>
