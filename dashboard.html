@@ -343,13 +343,31 @@
         <!-- ================= PAGE: MASTER DATA (ADMIN) ================= -->
         <div id="page-master" class="page">
             <div class="form-section">
-                <h3 class="section-title">Input / Edit Master Data Barang</h3>
+                <h3 class="section-title">Upload Master Data (Excel/CSV)</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:10px;">
+                    Kolom yang dibaca: <b>Kode</b>, <b>NamaItem</b>, <b>Kategori</b>, <b>Satuan</b>, <b>HargaSatuanDefault</b>.
+                    Baris pertama file harus judul kolom. Kode yang sudah terdaftar akan otomatis dilewati.
+                </p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <input type="file" id="uploadMasterFile" accept=".xlsx,.xls,.csv">
+                    <button class="btn-filter" onclick="uploadMasterFile()">⬆️ Upload</button>
+                    <button class="btn-reset" onclick="downloadTemplateMaster()">⬇️ Download Template</button>
+                </div>
+                <div id="uploadResultBox" style="margin-top:15px; display:none;">
+                    <p id="uploadSummary" style="font-weight:bold;"></p>
+                    <ul id="uploadSkippedList" style="font-size:12px; color:#c0392b; max-height:150px; overflow:auto; margin-top:5px;"></ul>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Input / Edit Master Data Barang (satuan)</h3>
                 <form id="masterForm">
                     <input type="hidden" id="masterId">
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Kode Barang</label>
-                            <input type="text" id="masterKode" required>
+                            <input type="text" id="masterKode" required oninput="cekKodeMaster()">
+                            <small id="kodeCheckMsg" style="display:block; margin-top:4px;"></small>
                         </div>
                         <div class="form-group">
                             <label>Nama Item</label>
@@ -392,7 +410,7 @@
 
 <script>
     // ⚠️ GANTI URL INI DENGAN URL HASIL DEPLOY TERBARU (harus berakhiran /exec)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxW5agefsFZ6rGoVK-nXQnBMcTgFaHhnk-rblqKliqnxfcd4WKJq7b01jKQROn1795hAw/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycby9gI622UEI67Eo21xWWENF51MKsFtPy0MVrF3_JTfNy-oDBQeRVeCTJGmhtCMUBWyjbA/exec';
 
     const BULAN_LIST = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
     const PAGE_TITLES = {
@@ -713,11 +731,23 @@
             return;
         }
         const id = document.getElementById('masterId').value;
+        const kode = document.getElementById('masterKode').value.trim();
+
+        // Cek duplikat di sisi klien dulu (data master sudah ter-load), supaya
+        // pengguna langsung tahu tanpa perlu round-trip ke server.
+        if (!id) {
+            const dup = masterItems.find(m => (m.Kode || '').toString().trim().toLowerCase() === kode.toLowerCase());
+            if (dup) {
+                showMessage(`Kode "${kode}" sudah terdaftar sebagai "${dup.NamaItem}". Gunakan kode lain atau edit data yang sudah ada.`, 'error');
+                return;
+            }
+        }
+
         const formData = new URLSearchParams();
         formData.append('action', id ? 'updateMaster' : 'saveMaster');
         formData.append('role', role);
         formData.append('id', id);
-        formData.append('kode', document.getElementById('masterKode').value.trim());
+        formData.append('kode', kode);
         formData.append('namaItem', document.getElementById('masterNama').value.trim());
         formData.append('kategori', document.getElementById('masterKategori').value);
         formData.append('satuan', document.getElementById('masterSatuan').value.trim());
@@ -737,6 +767,27 @@
         } catch (err) {
             console.error(err);
             showMessage('Koneksi ke server gagal.', 'error');
+        }
+    }
+
+    // Cek apakah Kode Barang sudah ada di Master Data (real-time saat mengetik)
+    function cekKodeMaster() {
+        const kode = document.getElementById('masterKode').value.trim().toLowerCase();
+        const currentId = document.getElementById('masterId').value;
+        const msgEl = document.getElementById('kodeCheckMsg');
+
+        if (!kode) { msgEl.textContent = ''; return; }
+
+        const found = masterItems.find(m =>
+            (m.Kode || '').toString().trim().toLowerCase() === kode && m.ID !== currentId
+        );
+
+        if (found) {
+            msgEl.style.color = '#dc3545';
+            msgEl.textContent = `⚠️ Kode sudah terdaftar untuk "${found.NamaItem}"`;
+        } else {
+            msgEl.style.color = '#28a745';
+            msgEl.textContent = '✅ Kode tersedia';
         }
     }
 
@@ -781,6 +832,99 @@
     function resetMasterForm() {
         document.getElementById('masterForm').reset();
         document.getElementById('masterId').value = '';
+        document.getElementById('kodeCheckMsg').textContent = '';
+    }
+
+    // ================= UPLOAD MASSAL MASTER DATA =================
+    function downloadTemplateMaster() {
+        const header = ['Kode', 'NamaItem', 'Kategori', 'Satuan', 'HargaSatuanDefault'];
+        const contoh = ['OBT-001', 'Paracetamol 500mg', 'Obat', 'Tablet', 500];
+        const ws = XLSX.utils.aoa_to_sheet([header, contoh]);
+        ws['!cols'] = header.map(() => ({ wch: 20 }));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Template');
+        XLSX.writeFile(wb, 'Template_Master_Data.xlsx');
+    }
+
+    function uploadMasterFile() {
+        if (role !== 'admin') {
+            showMessage('Hanya admin yang dapat mengupload Master Data.', 'error');
+            return;
+        }
+        const fileInput = document.getElementById('uploadMasterFile');
+        const file = fileInput.files[0];
+        if (!file) {
+            showMessage('Pilih file Excel/CSV terlebih dahulu.', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            try {
+                const dataArr = new Uint8Array(e.target.result);
+                const wb = XLSX.read(dataArr, { type: 'array' });
+                const firstSheet = wb.Sheets[wb.SheetNames[0]];
+                const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+                if (!jsonRows.length) {
+                    showMessage('File kosong atau format tidak sesuai.', 'error');
+                    return;
+                }
+
+                // Normalisasi nama kolom supaya fleksibel terhadap variasi penulisan header
+                const items = jsonRows.map(row => {
+                    const norm = {};
+                    Object.keys(row).forEach(k => {
+                        norm[k.toString().trim().toLowerCase().replace(/\s+/g, '')] = row[k];
+                    });
+                    return {
+                        kode: (norm['kode'] || '').toString().trim(),
+                        namaItem: (norm['namaitem'] || norm['nama'] || '').toString().trim(),
+                        kategori: (norm['kategori'] || '').toString().trim(),
+                        satuan: (norm['satuan'] || '').toString().trim(),
+                        hargaSatuanDefault: norm['hargasatuandefault'] || norm['harga'] || 0
+                    };
+                });
+
+                showMessage('Mengupload data master...', 'loading');
+
+                const formData = new URLSearchParams();
+                formData.append('action', 'bulkSaveMaster');
+                formData.append('role', role);
+                formData.append('items', JSON.stringify(items));
+
+                const res = await fetch(scriptURL, { method: 'POST', body: formData });
+                const result = await res.json();
+
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    showUploadResult(result);
+                    fileInput.value = '';
+                    loadMasterData();
+                } else {
+                    showMessage(result.message || 'Gagal upload data master', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showMessage('Gagal membaca file. Pastikan formatnya Excel (.xlsx/.xls) atau CSV.', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function showUploadResult(result) {
+        const box = document.getElementById('uploadResultBox');
+        const summary = document.getElementById('uploadSummary');
+        const list = document.getElementById('uploadSkippedList');
+
+        box.style.display = 'block';
+        summary.textContent = `Berhasil ditambahkan: ${result.added || 0} | Dilewati: ${(result.skipped || []).length}`;
+        list.innerHTML = '';
+        (result.skipped || []).forEach(s => {
+            const li = document.createElement('li');
+            li.textContent = `${s.kode} - ${s.alasan}`;
+            list.appendChild(li);
+        });
     }
 
     // ================= LAPORAN BULANAN =================
