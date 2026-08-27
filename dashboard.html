@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Stock Opname</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+            onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
@@ -159,6 +160,7 @@
                 <div class="card"><h3>Total Nilai</h3><p id="totalNilaiDisplay">Rp 0</p></div>
                 <div class="card"><h3>Total Obat</h3><p id="totalObat">Rp 0</p></div>
                 <div class="card"><h3>Total BMHP</h3><p id="totalBMHP">Rp 0</p></div>
+                <div class="card"><h3>Total B3</h3><p id="totalB3">Rp 0</p></div>
             </div>
         </div>
 
@@ -188,6 +190,7 @@
                             <select id="kategori">
                                 <option value="Obat">Obat</option>
                                 <option value="BMHP">BMHP</option>
+                                <option value="B3">B3</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -317,6 +320,7 @@
                 <div class="card"><h3>Total Nilai</h3><p id="lapTotalNilai">Rp 0</p></div>
                 <div class="card"><h3>Total Obat</h3><p id="lapTotalObat">Rp 0</p></div>
                 <div class="card"><h3>Total BMHP</h3><p id="lapTotalBMHP">Rp 0</p></div>
+                <div class="card"><h3>Total B3</h3><p id="lapTotalB3">Rp 0</p></div>
             </div>
 
             <div id="laporanActions" class="laporan-actions" style="display:none;">
@@ -345,7 +349,7 @@
             <div class="form-section">
                 <h3 class="section-title">Upload Master Data (Excel/CSV)</h3>
                 <p style="font-size:13px; color:#666; margin-bottom:10px;">
-                    Kolom yang dibaca: <b>Kode</b>, <b>NamaItem</b>, <b>Kategori</b>, <b>Satuan</b>, <b>HargaSatuanDefault</b>.
+                    Kolom yang dibaca: <b>Kode</b>, <b>NamaItem</b>, <b>Kategori</b> (isi: Obat / BMHP / B3), <b>Satuan</b>, <b>HargaSatuanDefault</b>.
                     Baris pertama file harus judul kolom. Kode yang sudah terdaftar akan otomatis dilewati.
                 </p>
                 <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -378,6 +382,7 @@
                             <select id="masterKategori">
                                 <option value="Obat">Obat</option>
                                 <option value="BMHP">BMHP</option>
+                                <option value="B3">B3</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -525,6 +530,7 @@
             document.getElementById('totalNilaiDisplay').innerText = "Rp " + formatRupiah(summary.totalNilai || 0);
             document.getElementById('totalObat').innerText = "Rp " + formatRupiah(summary.totalObat || 0);
             document.getElementById('totalBMHP').innerText = "Rp " + formatRupiah(summary.totalBMHP || 0);
+            document.getElementById('totalB3').innerText = "Rp " + formatRupiah(summary.totalB3 || 0);
 
             const dataRes = await fetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const dataJson = await dataRes.json();
@@ -837,6 +843,10 @@
 
     // ================= UPLOAD MASSAL MASTER DATA =================
     function downloadTemplateMaster() {
+        if (typeof XLSX === 'undefined') {
+            showMessage('Library Excel belum termuat, coba muat ulang halaman lalu coba lagi.', 'error');
+            return;
+        }
         const header = ['Kode', 'NamaItem', 'Kategori', 'Satuan', 'HargaSatuanDefault'];
         const contoh = ['OBT-001', 'Paracetamol 500mg', 'Obat', 'Tablet', 500];
         const ws = XLSX.utils.aoa_to_sheet([header, contoh]);
@@ -851,6 +861,10 @@
             showMessage('Hanya admin yang dapat mengupload Master Data.', 'error');
             return;
         }
+        if (typeof XLSX === 'undefined') {
+            showMessage('Library pembaca Excel belum berhasil dimuat (kemungkinan koneksi internet bermasalah atau CDN diblokir jaringan Anda). Coba muat ulang halaman, atau periksa koneksi internet.', 'error');
+            return;
+        }
         const fileInput = document.getElementById('uploadMasterFile');
         const file = fileInput.files[0];
         if (!file) {
@@ -859,7 +873,13 @@
         }
 
         const reader = new FileReader();
-        reader.onload = async function (e) {
+
+        reader.onerror = function () {
+            showMessage('Gagal membaca file dari perangkat Anda. Coba pilih ulang filenya.', 'error');
+        };
+
+        reader.onload = function (e) {
+            let items;
             try {
                 const dataArr = new Uint8Array(e.target.result);
                 const wb = XLSX.read(dataArr, { type: 'array' });
@@ -867,12 +887,12 @@
                 const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
 
                 if (!jsonRows.length) {
-                    showMessage('File kosong atau format tidak sesuai.', 'error');
+                    showMessage('File berhasil dibaca, tapi tidak ada baris data (cek apakah hanya berisi header).', 'error');
                     return;
                 }
 
                 // Normalisasi nama kolom supaya fleksibel terhadap variasi penulisan header
-                const items = jsonRows.map(row => {
+                items = jsonRows.map(row => {
                     const norm = {};
                     Object.keys(row).forEach(k => {
                         norm[k.toString().trim().toLowerCase().replace(/\s+/g, '')] = row[k];
@@ -884,32 +904,47 @@
                         satuan: (norm['satuan'] || '').toString().trim(),
                         hargaSatuanDefault: norm['hargasatuandefault'] || norm['harga'] || 0
                     };
-                });
+                }).filter(it => it.kode || it.namaItem);
 
-                showMessage('Mengupload data master...', 'loading');
-
-                const formData = new URLSearchParams();
-                formData.append('action', 'bulkSaveMaster');
-                formData.append('role', role);
-                formData.append('items', JSON.stringify(items));
-
-                const res = await fetch(scriptURL, { method: 'POST', body: formData });
-                const result = await res.json();
-
-                if (result.success) {
-                    showMessage(result.message, 'success');
-                    showUploadResult(result);
-                    fileInput.value = '';
-                    loadMasterData();
-                } else {
-                    showMessage(result.message || 'Gagal upload data master', 'error');
+                if (!items.length) {
+                    showMessage('Tidak ditemukan baris data yang valid. Pastikan kolom "Kode" dan "NamaItem" terisi.', 'error');
+                    return;
                 }
             } catch (err) {
-                console.error(err);
-                showMessage('Gagal membaca file. Pastikan formatnya Excel (.xlsx/.xls) atau CSV.', 'error');
+                console.error('Gagal parsing file upload:', err);
+                showMessage(`Gagal membaca isi file: ${err.message || err}. Pastikan file tidak rusak/terkunci password, dan formatnya .xlsx, .xls, atau .csv.`, 'error');
+                return;
             }
+
+            kirimBulkMaster(items, fileInput);
         };
+
         reader.readAsArrayBuffer(file);
+    }
+
+    async function kirimBulkMaster(items, fileInput) {
+        showMessage('Mengupload data master...', 'loading');
+        try {
+            const formData = new URLSearchParams();
+            formData.append('action', 'bulkSaveMaster');
+            formData.append('role', role);
+            formData.append('items', JSON.stringify(items));
+
+            const res = await fetch(scriptURL, { method: 'POST', body: formData });
+            const result = await res.json();
+
+            if (result.success) {
+                showMessage(result.message, 'success');
+                showUploadResult(result);
+                if (fileInput) fileInput.value = '';
+                loadMasterData();
+            } else {
+                showMessage(result.message || 'Gagal upload data master', 'error');
+            }
+        } catch (err) {
+            console.error('Gagal mengirim data ke server:', err);
+            showMessage(`Koneksi ke server gagal: ${err.message || err}`, 'error');
+        }
     }
 
     function showUploadResult(result) {
@@ -1001,22 +1036,24 @@
     }
 
     function renderLaporanSummary(rows) {
-        let totalNilai = 0, totalObat = 0, totalBMHP = 0;
+        let totalNilai = 0, totalObat = 0, totalBMHP = 0, totalB3 = 0;
         rows.forEach(r => {
             const n = parseFloat(r.TotalNilai) || 0;
             totalNilai += n;
             const kat = (r.Kategori || '').toLowerCase();
             if (kat === 'obat') totalObat += n;
             else if (kat === 'bmhp') totalBMHP += n;
+            else if (kat === 'b3') totalB3 += n;
         });
         document.getElementById('lapTotalItem').innerText = rows.length;
         document.getElementById('lapTotalNilai').innerText = 'Rp ' + formatRupiah(totalNilai);
         document.getElementById('lapTotalObat').innerText = 'Rp ' + formatRupiah(totalObat);
         document.getElementById('lapTotalBMHP').innerText = 'Rp ' + formatRupiah(totalBMHP);
+        document.getElementById('lapTotalB3').innerText = 'Rp ' + formatRupiah(totalB3);
     }
 
     function judulLaporan() {
-        return `Laporan Sisa Persediaan Obat dan BMHP (${laporanPeriodeText})`;
+        return `Laporan Sisa Persediaan Obat, BMHP dan B3 (${laporanPeriodeText})`;
     }
 
     function exportLaporanExcel() {
