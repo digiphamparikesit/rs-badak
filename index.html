@@ -27,31 +27,48 @@
     </div>
 
     <script>
-        // ⚠️ URL TIDAK DIHAPUS SESUAI PERMINTAAN (Pastikan URL ini valid!)
+        // URL TIDAK DIHAPUS SESUAI PERMINTAAN
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzYfaNiaqTs33pHjov5rjCUEOPp0ttxTOH5AyPXsYTrZj_k6pcNmhbZ5ZxXdyFvhAB0QA/exec';
         
-        // Daftar Proxy Cadangan (allorigins lebih stabil dari corsproxy)
         const proxyList = [
             'https://api.allorigins.win/raw?url=',
             'https://corsproxy.io/?'
         ];
 
+        // FUNGSI FETCH ANTI ERROR "Unexpected token"
         async function safeFetch(url, options = {}) {
-            // Coba langsung dulu
+            let res;
             try {
-                let res = await fetch(url, options);
-                if (res.ok) return res;
-            } catch (e) { /* Lanjut ke proxy */ }
-
-            // Coba Proxy satu per satu
-            for (let proxy of proxyList) {
-                try {
-                    const proxyUrl = proxy + encodeURIComponent(url);
-                    let res = await fetch(proxyUrl, { ...options, headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } });
-                    if (res.ok) return res;
-                } catch (e) { /* Coba proxy berikutnya */ }
+                res = await fetch(url, options);
+            } catch (e) {
+                // Coba proxy
+                for (let proxy of proxyList) {
+                    try {
+                        const proxyUrl = proxy + encodeURIComponent(url);
+                        res = await fetch(proxyUrl, { ...options, headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } });
+                        if (res.ok) break;
+                    } catch (e2) { continue; }
+                }
             }
-            throw new Error("Semua koneksi gagal. Periksa kembali URL /exec (404) atau akses 'Anyone'.");
+
+            // Jika masih gagal total
+            if (!res) throw new Error("Semua koneksi (langsung & proxy) gagal.");
+
+            // 1. Cek apakah response OK
+            if (!res.ok) {
+                throw new Error(`Server Error: ${res.status} (URL /exec mungkin 404 atau belum di-deploy)`);
+            }
+
+            // 2. Cek tipe konten! Jika HTML, lempar error khusus
+            const contentType = res.headers.get("content-type") || "";
+            if (!contentType.includes("application/json")) {
+                // Baca teks untuk memastikan (meskipun error akan dilempar)
+                await res.text(); 
+                throw new Error("Server tidak mengembalikan JSON. Kemungkinan besar: URL /exec salah, atau akses deployment Apps Script belum diset ke 'Siapa saja' (Anyone).");
+            }
+
+            // 3. Aman untuk di-parse JSON
+            return res;
         }
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
