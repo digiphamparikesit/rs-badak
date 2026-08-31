@@ -8,6 +8,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .app-container { display: flex; min-height: 100vh; }
+        
+        /* SIDEBAR */
         .sidebar { width: 250px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 20px; text-align: center; background-color: #34495e; border-bottom: 2px solid #1abc9c; }
         .sidebar-header h2 { font-size: 18px; margin: 0; }
@@ -17,11 +19,16 @@
         .menu-item.active { background-color: #1abc9c; color: white; font-weight: bold; }
         .sidebar-footer { padding: 20px; border-top: 1px solid #34495e; }
         
+        /* KONTEN UTAMA */
         .main-content { flex: 1; padding: 20px; overflow-x: hidden; }
         .page-title { margin-bottom: 20px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
         #message { margin-bottom: 15px; text-align: center; font-weight: bold; }
         .success { color: green; } .error { color: red; } .loading { color: #555; }
         
+        /* SISTEM MENU TAB (KUNCI PERUBAHAN) */
+        .section { display: none; } /* Semua menu disembunyikan default */
+        .section.active { display: block; } /* Hanya menu aktif yang muncul */
+
         .filter-section { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;}
         .filter-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
         .filter-group select, .filter-group input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 150px;}
@@ -71,11 +78,12 @@
     <div class="sidebar">
         <div class="sidebar-header"><h2>Stock Opname</h2><small>Sistem Informasi</small></div>
         <nav class="sidebar-menu">
-            <a class="menu-item" onclick="scrollToSection('summaryCards')">📊 Dashboard / Rekap</a>
-            <a class="menu-item" onclick="scrollToSection('formSection')">📝 Input Data</a>
-            <a class="menu-item" onclick="scrollToSection('tableSection')">📋 Tabel Stok</a>
-            <a class="menu-item" onclick="scrollToSection('laporanSection')">📄 Laporan Bulanan</a>
-            <a class="menu-item" onclick="scrollToSection('masterSection')">🗂️ Master Data</a>
+            <!-- Ubah onclick menjadi showSection -->
+            <a class="menu-item" id="menu-dashboard" onclick="showSection('section-dashboard')">📊 Dashboard / Rekap</a>
+            <a class="menu-item" id="menu-input" onclick="showSection('section-input')">📝 Input Data</a>
+            <a class="menu-item" id="menu-tabel" onclick="showSection('section-tabel')">📋 Tabel Stok</a>
+            <a class="menu-item" id="menu-laporan" onclick="showSection('section-laporan')">📄 Laporan Bulanan</a>
+            <a class="menu-item" id="menu-master" onclick="showSection('section-master')">🗂️ Master Data</a>
         </nav>
         <div class="sidebar-footer">
             <span id="userLabel" style="font-size: 12px; display: block; margin-bottom: 10px;">User: -</span>
@@ -87,79 +95,106 @@
         <h2 class="page-title">Dashboard Stock Opname</h2>
         <div id="message"></div>
 
-        <div id="summaryCards" class="summary-cards">
-            <div class="card"><h3>Total Item</h3><p id="totalItem">0</p></div>
-            <div class="card"><h3>Total Nilai</h3><p id="totalNilaiDisplay">Rp 0</p></div>
-            <div class="card"><h3>Total Obat</h3><p id="totalObat">Rp 0</p></div>
-            <div class="card"><h3>Total BMHP</h3><p id="totalBMHP">Rp 0</p></div>
-        </div>
-
-        <div id="formSection" class="form-section">
-            <h3 style="margin-bottom: 15px;">Input / Edit Data Stock</h3>
-            <form id="itemForm">
-                <input type="hidden" id="itemId">
-                <div class="form-grid">
-                    <div class="form-group"><label>Kode Barang</label><input type="text" id="kode" required></div>
-                    <div class="form-group"><label>Nama Item</label><input type="text" id="namaItem" required></div>
-                    <div class="form-group"><label>Kategori</label><select id="kategori"><option value="Obat">Obat</option><option value="BMHP">BMHP</option></select></div>
-                    <div class="form-group"><label>Depo</label><select id="depo"><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
-                    <div class="form-group"><label>Satuan</label><input type="text" id="satuan" required></div>
-                    <div class="form-group"><label>Stok Awal</label><input type="number" id="stokAwal" value="0" oninput="autoCalc()"></div>
-                    <div class="form-group"><label>Stok Masuk</label><input type="number" id="stokMasuk" value="0" oninput="autoCalc()"></div>
-                    <div class="form-group"><label>Stok Keluar</label><input type="number" id="stokKeluar" value="0" oninput="autoCalc()"></div>
-                    <div class="form-group"><label>Stok Akhir</label><input type="number" id="stokAkhir" value="0" readonly></div>
-                    <div class="form-group"><label>Harga Satuan</label><input type="number" id="hargaSatuan" value="0" oninput="autoCalc()"></div>
-                    <div class="form-group"><label>Total Nilai</label><input type="number" id="totalNilai" value="0" readonly></div>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label>Bulan & Tahun</label>
-                    <div style="display: flex; gap: 10px;">
-                        <select id="bulan" style="width: 50%;">
-                            <option>Januari</option><option>Februari</option><option>Maret</option><option>April</option>
-                            <option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option>
-                            <option>September</option><option>Oktober</option><option>November</option><option>Desember</option>
-                        </select>
-                        <input type="number" id="tahun" placeholder="2024" style="width: 50%;" required>
-                    </div>
-                </div>
-                <button type="button" class="btn-submit" onclick="submitData()">Simpan Data</button>
-                <button type="button" class="btn-cancel" onclick="resetForm()">Bersihkan Form</button>
-            </form>
-        </div>
-
-        <div id="tableSection" class="table-section">
-            <h3>Data Stock Opname</h3>
-            <div class="filter-section" style="margin-top: 10px;">
+        <!-- SECTION 1: DASHBOARD (Hanya muncul saat menu Dashboard diklik) -->
+        <div id="section-dashboard" class="section">
+            <div id="summaryCards" class="summary-cards">
+                <div class="card"><h3>Total Item</h3><p id="totalItem">0</p></div>
+                <div class="card"><h3>Total Nilai</h3><p id="totalNilaiDisplay">Rp 0</p></div>
+                <div class="card"><h3>Total Obat</h3><p id="totalObat">Rp 0</p></div>
+                <div class="card"><h3>Total BMHP</h3><p id="totalBMHP">Rp 0</p></div>
+            </div>
+            
+            <div class="filter-section">
                 <div class="filter-group"><label>Bulan</label><select id="filterBulan"><option value="">Semua</option><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
                 <div class="filter-group"><label>Tahun</label><input type="number" id="filterTahun" placeholder="2024"></div>
                 <div class="filter-group"><label>Depo</label><select id="filterDepo"><option value="">Semua</option><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
                 <button class="btn-filter" onclick="loadDataAndSummary()">Cari Data</button>
                 <button class="btn-reset" onclick="resetFilter()">Reset</button>
             </div>
-            <table><thead><tr><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Depo</th><th>Stok Akhir</th><th>Harga</th><th>Total Nilai</th><th>Aksi</th></tr></thead><tbody id="tableBody"></tbody></table>
+            
+            <!-- Tampilkan 4 kartu ringkasan di sini -->
         </div>
 
-        <div id="laporanSection" class="form-section">
-            <h3>Laporan Bulanan</h3>
-            <p style="margin-bottom: 15px; font-size: 14px; color: #666;">Pilih Bulan dan Tahun, lalu klik tombol Print untuk mencetak laporan sisa persediaan.</p>
-            <div class="filter-section" style="padding: 0; box-shadow: none;">
-                <div class="filter-group"><label>Bulan</label><select id="laporanBulan"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
-                <div class="filter-group"><label>Tahun</label><input type="number" id="laporanTahun" placeholder="2024"></div>
-                <div class="filter-group"><label>Depo</label><select id="laporanDepo"><option value="">Semua</option><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
-                <button class="btn-print" onclick="generatePrintPreview()">🖨️ Print Preview</button>
+        <!-- SECTION 2: INPUT DATA (Hanya muncul saat menu Input diklik) -->
+        <div id="section-input" class="section">
+            <div class="form-section">
+                <h3 style="margin-bottom: 15px;">Input / Edit Data Stock</h3>
+                <form id="itemForm">
+                    <input type="hidden" id="itemId">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Kode Barang</label><input type="text" id="kode" required></div>
+                        <div class="form-group"><label>Nama Item</label><input type="text" id="namaItem" required></div>
+                        <div class="form-group"><label>Kategori</label><select id="kategori"><option value="Obat">Obat</option><option value="BMHP">BMHP</option></select></div>
+                        <div class="form-group"><label>Depo</label><select id="depo"><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
+                        <div class="form-group"><label>Satuan</label><input type="text" id="satuan" required></div>
+                        <div class="form-group"><label>Stok Awal</label><input type="number" id="stokAwal" value="0" oninput="autoCalc()"></div>
+                        <div class="form-group"><label>Stok Masuk</label><input type="number" id="stokMasuk" value="0" oninput="autoCalc()"></div>
+                        <div class="form-group"><label>Stok Keluar</label><input type="number" id="stokKeluar" value="0" oninput="autoCalc()"></div>
+                        <div class="form-group"><label>Stok Akhir</label><input type="number" id="stokAkhir" value="0" readonly></div>
+                        <div class="form-group"><label>Harga Satuan</label><input type="number" id="hargaSatuan" value="0" oninput="autoCalc()"></div>
+                        <div class="form-group"><label>Total Nilai</label><input type="number" id="totalNilai" value="0" readonly></div>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Bulan & Tahun</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="bulan" style="width: 50%;">
+                                <option>Januari</option><option>Februari</option><option>Maret</option><option>April</option>
+                                <option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option>
+                                <option>September</option><option>Oktober</option><option>November</option><option>Desember</option>
+                            </select>
+                            <input type="number" id="tahun" placeholder="2024" style="width: 50%;" required>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-submit" onclick="submitData()">Simpan Data</button>
+                    <button type="button" class="btn-cancel" onclick="resetForm()">Bersihkan Form</button>
+                </form>
             </div>
         </div>
 
-        <div id="masterSection" class="form-section">
-            <h3>Master Data</h3>
-            <p style="color: #666; font-size: 14px;">Fitur ini digunakan untuk mengelola master obat (kode, nama, satuan, dll).</p>
-            <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center; color: #888;">
-                <p><i>Silakan integrasikan tabel master obat di sini.</i></p>
+        <!-- SECTION 3: TABEL STOK (Hanya muncul saat menu Tabel diklik) -->
+        <div id="section-tabel" class="section">
+            <div class="table-section">
+                <h3>Data Stock Opname</h3>
+                <div class="filter-section" style="margin-top: 10px;">
+                    <div class="filter-group"><label>Bulan</label><select id="filterBulanTabel"><option value="">Semua</option><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
+                    <div class="filter-group"><label>Tahun</label><input type="number" id="filterTahunTabel" placeholder="2024"></div>
+                    <div class="filter-group"><label>Depo</label><select id="filterDepoTabel"><option value="">Semua</option><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
+                    <button class="btn-filter" onclick="loadTable()">Cari Data</button>
+                </div>
+                <table><thead><tr><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Depo</th><th>Stok Akhir</th><th>Harga</th><th>Total Nilai</th><th>Aksi</th></tr></thead><tbody id="tableBody"></tbody></table>
             </div>
         </div>
+
+        <!-- SECTION 4: LAPORAN BULANAN -->
+        <div id="section-laporan" class="section">
+            <div class="form-section">
+                <h3>Laporan Bulanan</h3>
+                <p style="margin-bottom: 15px; font-size: 14px; color: #666;">Pilih Bulan dan Tahun, lalu klik tombol Print untuk mencetak laporan sisa persediaan.</p>
+                
+                <div class="filter-section" style="padding: 0; box-shadow: none;">
+                    <div class="filter-group"><label>Bulan</label><select id="laporanBulan"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
+                    <div class="filter-group"><label>Tahun</label><input type="number" id="laporanTahun" placeholder="2024"></div>
+                    <div class="filter-group"><label>Depo</label><select id="laporanDepo"><option value="">Semua</option><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
+                    <button class="btn-print" onclick="generatePrintPreview()">🖨️ Print Preview</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 5: MASTER DATA -->
+        <div id="section-master" class="section">
+            <div class="form-section">
+                <h3>Master Data</h3>
+                <p style="color: #666; font-size: 14px;">Fitur ini digunakan untuk mengelola master obat (kode, nama, satuan, dll).</p>
+                <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center; color: #888;">
+                    <p><i>Silakan integrasikan tabel master obat di sini.</i></p>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
+<!-- AREA PRINT (Tetap tersembunyi, hanya muncul saat print) -->
 <div id="printArea">
     <div class="print-layout">
         <div class="print-header">
@@ -177,40 +212,70 @@
 </div>
 
 <script>
-    // ⚠️ URL TIDAK DIHAPUS SESUAI PERMINTAAN
+    // URL TIDAK DIHAPUS SESUAI PERMINTAAN
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzYfaNiaqTs33pHjov5rjCUEOPp0ttxTOH5AyPXsYTrZj_k6pcNmhbZ5ZxXdyFvhAB0QA/exec';
     
-    // Ganti corsproxy dengan allorigins (lebih stabil)
     const proxyList = [
         'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?'
     ];
 
-    // Fungsi fetch yang tahan banting
+    // FUNGSI FETCH ANTI ERROR JSON
     async function safeFetch(url, options = {}) {
+        let res;
         try {
-            let res = await fetch(url, options);
-            if (res.ok) return res;
-        } catch (e) {}
-        for (let proxy of proxyList) {
-            try {
-                const proxyUrl = proxy + encodeURIComponent(url);
-                let res = await fetch(proxyUrl, { ...options, headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } });
-                if (res.ok) return res;
-            } catch (e) {}
+            res = await fetch(url, options);
+        } catch (e) {
+            for (let proxy of proxyList) {
+                try {
+                    const proxyUrl = proxy + encodeURIComponent(url);
+                    res = await fetch(proxyUrl, { ...options, headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } });
+                    if (res.ok) break;
+                } catch (e2) { continue; }
+            }
         }
-        // Jika semua gagal, lempar error yang jelas
-        throw new Error("Koneksi gagal. Cek URL /exec (404) atau pastikan akses 'Anyone'.");
+        if (!res) throw new Error("Semua koneksi (langsung & proxy) gagal.");
+        if (!res.ok) throw new Error(`Server Error: ${res.status} (URL /exec mungkin 404)`);
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+            await res.text();
+            throw new Error("Server tidak mengembalikan JSON. Pastikan akses Apps Script diset 'Siapa saja'.");
+        }
+        return res;
     }
 
-    // Definisikan semua fungsi GLOBAL agar tombol selalu merespons
-    function scrollToSection(id) {
-        const el = document.getElementById(id);
-        if(el) el.scrollIntoView({ behavior: 'smooth' });
+    // ==========================================
+    // FUNGSI NAVIGASI MENU (KUNCI PERBAIKAN)
+    // ==========================================
+    function showSection(sectionId) {
+        // Sembunyikan semua section
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => section.classList.remove('active'));
+
+        // Tampilkan section yang dipilih
+        const activeSection = document.getElementById(sectionId);
+        if (activeSection) {
+            activeSection.classList.add('active');
+        }
+
+        // Update highlight menu sidebar
+        const menus = document.querySelectorAll('.menu-item');
+        menus.forEach(menu => menu.classList.remove('active'));
+        
+        // Mapping ID section ke ID menu
+        const activeMenuId = 'menu-' + sectionId.replace('section-', '');
+        const activeMenu = document.getElementById(activeMenuId);
+        if (activeMenu) {
+            activeMenu.classList.add('active');
+        }
     }
 
+    // Fungsi Logout
     function logout() { localStorage.clear(); window.location.href = "index.html"; }
 
+    // ==========================================
+    // FUNGSI DATA
+    // ==========================================
     function autoCalc() {
         const awal = parseFloat(document.getElementById('stokAwal').value) || 0;
         const masuk = parseFloat(document.getElementById('stokMasuk').value) || 0;
@@ -228,6 +293,7 @@
         document.getElementById('totalNilai').value = 0;
     }
 
+    // Load Dashboard & Summary
     async function loadDataAndSummary() {
         const bulan = document.getElementById('filterBulan').value;
         const tahun = document.getElementById('filterTahun').value;
@@ -240,13 +306,24 @@
             document.getElementById('totalNilaiDisplay').innerText = "Rp " + formatRupiah(summary.totalNilai || 0);
             document.getElementById('totalObat').innerText = "Rp " + formatRupiah(summary.totalObat || 0);
             document.getElementById('totalBMHP').innerText = "Rp " + formatRupiah(summary.totalBMHP || 0);
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage("Gagal mengambil data: " + error.message, 'error');
+        }
+    }
 
+    // Load Tabel (Saat menu Tabel diklik)
+    async function loadTable() {
+        const bulan = document.getElementById('filterBulanTabel').value;
+        const tahun = document.getElementById('filterTahunTabel').value;
+        const depo = document.getElementById('filterDepoTabel').value;
+        try {
             const dataRes = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const dataJson = await dataRes.json();
             renderTable(dataJson.data || []);
         } catch (error) {
             console.error('Error:', error);
-            showMessage("Gagal mengambil data: " + error.message, 'error');
+            showMessage("Gagal mengambil data tabel: " + error.message, 'error');
         }
     }
 
@@ -273,6 +350,7 @@
         });
     }
 
+    // Submit Data
     async function submitData() {
         const formData = new URLSearchParams();
         formData.append('action', 'save');
@@ -285,17 +363,23 @@
         try {
             const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
             const result = await response.json();
-            if (result.success) { showMessage(result.message, 'success'); resetForm(); loadDataAndSummary(); }
-            else { showMessage(result.error || 'Gagal menyimpan data', 'error'); }
+            if (result.success) {
+                showMessage(result.message, 'success');
+                resetForm();
+                // Pindah ke Tabel Stok untuk melihat hasil
+                showSection('section-tabel');
+                loadTable();
+            } else { showMessage(result.error || 'Gagal menyimpan data', 'error'); }
         } catch (error) { console.error(error); showMessage("Koneksi ke server gagal.", 'error'); }
     }
 
+    // Edit Data
     async function editData(id) {
         if (!id) return alert("Data tidak valid");
         try {
-            const bulan = document.getElementById('filterBulan').value;
-            const tahun = document.getElementById('filterTahun').value;
-            const depo = document.getElementById('filterDepo').value;
+            const bulan = document.getElementById('filterBulanTabel').value;
+            const tahun = document.getElementById('filterTahunTabel').value;
+            const depo = document.getElementById('filterDepoTabel').value;
             const res = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const json = await res.json();
             const item = json.data.find(d => (d.ID || '') === id);
@@ -314,11 +398,13 @@
                 document.getElementById('totalNilai').value = item.TotalNilai || 0;
                 document.getElementById('bulan').value = item.Bulan || '';
                 document.getElementById('tahun').value = item.Tahun || '';
-                scrollToSection('formSection');
+                // Pindah ke menu Input
+                showSection('section-input');
             }
         } catch (e) { alert("Gagal memuat data untuk diedit"); }
     }
 
+    // Delete Data
     async function deleteData(id) {
         if(!confirm("Yakin ingin menghapus?")) return;
         const formData = new URLSearchParams();
@@ -327,18 +413,12 @@
         try {
             const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
             const result = await response.json();
-            if (result.success) { showMessage(result.message, 'success'); loadDataAndSummary(); }
+            if (result.success) { showMessage(result.message, 'success'); loadTable(); }
             else showMessage(result.error || 'Gagal menghapus', 'error');
         } catch (e) { showMessage("Koneksi gagal!", 'error'); }
     }
 
-    function resetFilter() {
-        document.getElementById('filterBulan').value = '';
-        document.getElementById('filterTahun').value = '';
-        if (role !== 'depo') document.getElementById('filterDepo').value = '';
-        loadDataAndSummary();
-    }
-
+    // Print Preview
     async function generatePrintPreview() {
         const bulan = document.getElementById('laporanBulan').value;
         const tahun = document.getElementById('laporanTahun').value;
@@ -402,17 +482,25 @@
             document.getElementById('depo').disabled = true;
             document.getElementById('filterDepo').value = userDepo;
             document.getElementById('filterDepo').disabled = true;
+            document.getElementById('filterDepoTabel').value = userDepo;
+            document.getElementById('filterDepoTabel').disabled = true;
             document.getElementById('laporanDepo').value = userDepo;
             document.getElementById('laporanDepo').disabled = true;
         }
     }
 
-    // Initial Load
+    // Initial Load (Hanya Dashboard yang muncul)
     window.onload = function() {
         const currentYear = new Date().getFullYear();
         document.getElementById('tahun').value = currentYear;
         document.getElementById('filterTahun').value = currentYear;
+        document.getElementById('filterTahunTabel').value = currentYear;
         document.getElementById('laporanTahun').value = currentYear;
+        
+        // Tampilkan menu Dashboard secara default
+        showSection('section-dashboard');
+        
+        // Load data untuk Dashboard
         loadDataAndSummary();
     };
 </script>
