@@ -8,8 +8,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .app-container { display: flex; min-height: 100vh; }
-        
-        /* SIDEBAR */
         .sidebar { width: 250px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 20px; text-align: center; background-color: #34495e; border-bottom: 2px solid #1abc9c; }
         .sidebar-header h2 { font-size: 18px; margin: 0; }
@@ -19,13 +17,11 @@
         .menu-item.active { background-color: #1abc9c; color: white; font-weight: bold; }
         .sidebar-footer { padding: 20px; border-top: 1px solid #34495e; }
         
-        /* KONTEN UTAMA */
         .main-content { flex: 1; padding: 20px; overflow-x: hidden; }
         .page-title { margin-bottom: 20px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
         #message { margin-bottom: 15px; text-align: center; font-weight: bold; }
         .success { color: green; } .error { color: red; } .loading { color: #555; }
         
-        /* SISTEM MENU TAB (Klik 1 menu, hanya 1 yang muncul) */
         .section { display: none; }
         .section.active { display: block; }
 
@@ -56,7 +52,6 @@
         .btn-edit { background-color: #ffc107; color: white; }
         .btn-delete { background-color: #dc3545; color: white; }
         
-        /* AREA PRINT */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -82,6 +77,7 @@
             <a class="menu-item" id="menu-dashboard" onclick="showSection('section-dashboard')">📊 Dashboard / Rekap</a>
             <a class="menu-item" id="menu-input" onclick="showSection('section-input')">📝 Input Data</a>
             <a class="menu-item" id="menu-tabel" onclick="showSection('section-tabel')">📋 Tabel Stok</a>
+            <a class="menu-item" id="menu-kartu" onclick="showSection('section-kartu')">📒 Kartu Stok</a> <!-- MENU BARU untuk semua user -->
             <a class="menu-item" id="menu-laporan" onclick="showSection('section-laporan')">📄 Laporan Bulanan</a>
             <a class="menu-item" id="menu-master" style="display: none;" onclick="showSection('section-master')">🗂️ Master Data</a>
         </nav>
@@ -95,7 +91,7 @@
         <h2 class="page-title">Dashboard Stock Opname</h2>
         <div id="message"></div>
 
-        <!-- MENU: DASHBOARD -->
+        <!-- SECTION DASHBOARD -->
         <div id="section-dashboard" class="section">
             <div id="summaryCards" class="summary-cards">
                 <div class="card"><h3>Total Item</h3><p id="totalItem">0</p></div>
@@ -112,21 +108,17 @@
             </div>
         </div>
 
-        <!-- MENU: INPUT DATA (Dengan Dropdown Master) -->
+        <!-- SECTION INPUT -->
         <div id="section-input" class="section">
             <div class="form-section">
                 <h3 style="margin-bottom: 15px;">Input / Edit Data Stock</h3>
                 <form id="itemForm">
                     <input type="hidden" id="itemId">
                     <div class="form-grid">
-                        <!-- DROPDOWN MASTER DATA (Nama Obat) -->
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label>Pilih dari Master Data (Otomatis Mengisi)</label>
-                            <select id="masterSelect" onchange="isiDariMaster()">
-                                <option value="">-- Pilih Nama Obat / BMHP --</option>
-                            </select>
+                            <select id="masterSelect" onchange="isiDariMaster()"><option value="">-- Pilih Nama Obat / BMHP --</option></select>
                         </div>
-
                         <div class="form-group"><label>Kode Barang</label><input type="text" id="kode" required></div>
                         <div class="form-group"><label>Nama Item</label><input type="text" id="namaItem" required></div>
                         <div class="form-group"><label>Kategori</label><select id="kategori"><option value="Obat">Obat</option><option value="BMHP">BMHP</option></select></div>
@@ -152,7 +144,7 @@
             </div>
         </div>
 
-        <!-- MENU: TABEL STOK -->
+        <!-- SECTION TABEL STOK -->
         <div id="section-tabel" class="section">
             <div class="table-section">
                 <h3>Data Stock Opname</h3>
@@ -166,7 +158,43 @@
             </div>
         </div>
 
-        <!-- MENU: LAPORAN BULANAN -->
+        <!-- SECTION KARTU STOK (MENU BARU) -->
+        <div id="section-kartu" class="section">
+            <div class="form-section">
+                <h3 style="margin-bottom: 15px;">Kartu Stok Barang</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Pilih Barang dari Master</label>
+                        <select id="kartuMasterSelect" onchange="isiKartuDariMaster()">
+                            <option value="">-- Pilih Nama Barang --</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Kode Barang</label><input type="text" id="kartuKode" readonly></div>
+                    <div class="form-group"><label>Nama Barang</label><input type="text" id="kartuNama" readonly></div>
+                    <div class="form-group"><label>Depo</label><select id="kartuDepo"><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option><option value="Gudang Farmasi">Gudang Farmasi</option></select></div>
+                    <div class="form-group"><label>Jenis Transaksi</label>
+                        <select id="kartuJenis">
+                            <option value="Masuk - Gudang Farmasi">Masuk - Gudang Farmasi</option>
+                            <option value="Masuk - Mutasi dari Depo Lain">Masuk - Mutasi dari Depo Lain</option>
+                            <option value="Keluar">Keluar</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Jumlah</label><input type="number" id="kartuJumlah" value="0"></div>
+                    <div class="form-group"><label>Keterangan</label><input type="text" id="kartuKeterangan" placeholder="Contoh: Kiriman rutin bulanan"></div>
+                </div>
+
+                <button type="button" class="btn-submit" onclick="submitKartu()">Simpan Kartu Stok</button>
+                <button type="button" class="btn-cancel" onclick="resetKartuForm()">Reset Form</button>
+            </div>
+
+            <div class="table-section" style="margin-top: 20px;">
+                <h3>Riwayat Kartu Stok</h3>
+                <table><thead><tr><th>Tanggal</th><th>Kode</th><th>Nama Item</th><th>Depo</th><th>Jenis</th><th>Jumlah</th><th>Sisa</th><th>Keterangan</th></tr></thead><tbody id="kartuBody"></tbody></table>
+            </div>
+        </div>
+
+        <!-- SECTION LAPORAN BULANAN -->
         <div id="section-laporan" class="section">
             <div class="form-section">
                 <h3>Laporan Bulanan</h3>
@@ -180,15 +208,25 @@
             </div>
         </div>
 
-        <!-- MENU: MASTER DATA (Hanya Admin) -->
+        <!-- SECTION MASTER DATA -->
         <div id="section-master" class="section">
             <div class="form-section">
                 <h3>Master Data Obat & BMHP</h3>
-                <p style="color: #666; font-size: 14px;">Kelola data master obat.</p>
+                <div class="form-grid" style="margin-bottom: 20px;">
+                    <div class="form-group"><label>Kode Barang</label><input type="text" id="masterKode" placeholder="Contoh: OBT-010"></div>
+                    <div class="form-group"><label>Nama Item</label><input type="text" id="masterNama" placeholder="Contoh: Vitamin C"></div>
+                    <div class="form-group"><label>Kategori</label><select id="masterKategori"><option value="Obat">Obat</option><option value="BMHP">BMHP</option></select></div>
+                    <div class="form-group"><label>Satuan</label><input type="text" id="masterSatuan" placeholder="Tablet, Box, pcs"></div>
+                    <div class="form-group"><label>Harga Satuan</label><input type="number" id="masterHarga" value="0"></div>
+                    <div class="form-group"><button class="btn-submit" style="margin-top: 20px;" onclick="saveNewMaster()">Simpan Master Baru</button></div>
+                </div>
+                <div class="master-upload" style="margin-bottom: 20px;">
+                    <input type="file" id="csvFileInput" accept=".csv" style="padding: 8px;">
+                    <button class="btn-filter" onclick="uploadCsv()">Upload CSV</button>
+                </div>
                 <table><thead><tr><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Satuan</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="masterBody"></tbody></table>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -214,7 +252,6 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwcLhFx1_0BmQ8qUTEcOthMzDOzyujDSJlscH6QXKCb91L0sE1ksaKrAVXfjAN4j4D7xw/exec';
     const proxyList = ['https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?'];
 
-    // ====== SAFE FETCH ======
     async function safeFetch(url, options = {}) {
         let res;
         try { res = await fetch(url, options); } catch (e) {
@@ -233,7 +270,6 @@
         return res;
     }
 
-    // ====== NAVIGASI MENU ======
     function showSection(sectionId) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         const activeSection = document.getElementById(sectionId);
@@ -245,11 +281,101 @@
         if (activeMenu) activeMenu.classList.add('active');
 
         if (sectionId === 'section-master') loadMasterData();
+        if (sectionId === 'section-kartu') loadKartu(); // Panggil saat menu kartu dibuka
     }
 
     function logout() { localStorage.clear(); window.location.href = "index.html"; }
 
-    // ====== FORM DAN KALKULASI ======
+    // ====== KARTU STOK ======
+    async function loadKartuDropdown() {
+        try {
+            const res = await safeFetch(`${scriptURL}?action=getMaster`);
+            const json = await res.json();
+            const select = document.getElementById('kartuMasterSelect');
+            select.innerHTML = '<option value="">-- Pilih Nama Barang --</option>';
+            if (json.data && json.data.length > 0) {
+                json.data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.NamaItem;
+                    opt.textContent = item.NamaItem;
+                    opt.dataset.kode = item.Kode || '';
+                    opt.dataset.kategori = item.Kategori || 'Obat';
+                    select.appendChild(opt);
+                });
+            }
+        } catch (e) { console.error('Gagal memuat dropdown:', e); }
+    }
+
+    function isiKartuDariMaster() {
+        const select = document.getElementById('kartuMasterSelect');
+        const selected = select.selectedOptions[0];
+        if (!selected || selected.value === '') return;
+        document.getElementById('kartuKode').value = selected.dataset.kode || '';
+        document.getElementById('kartuNama').value = selected.value;
+        document.getElementById('kartuKategori').value = selected.dataset.kategori || 'Obat';
+    }
+
+    async function loadKartu() {
+        const depo = document.getElementById('kartuDepo').value;
+        try {
+            const res = await safeFetch(`${scriptURL}?action=getKartu&depo=${depo}`);
+            const json = await res.json();
+            const tbody = document.getElementById('kartuBody');
+            tbody.innerHTML = '';
+            if (!json.data || json.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Belum ada transaksi</td></tr>';
+                return;
+            }
+            json.data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.Tanggal || '-'}</td><td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Depo || '-'}</td><td>${item.JenisTransaksi || '-'}</td><td>${item.Jumlah || 0}</td><td>${item.Sisa || 0}</td><td>${item.Keterangan || '-'}</td>`;
+                tbody.appendChild(tr);
+            });
+        } catch (e) { showMessage("Gagal memuat kartu: " + e.message, 'error'); }
+    }
+
+    async function submitKartu() {
+        const kode = document.getElementById('kartuKode').value;
+        const namaItem = document.getElementById('kartuNama').value;
+        const depo = document.getElementById('kartuDepo').value;
+        const jenis = document.getElementById('kartuJenis').value;
+        const jumlah = document.getElementById('kartuJumlah').value;
+        const keterangan = document.getElementById('kartuKeterangan').value;
+
+        if (!kode || !namaItem || !depo) return alert("Silakan pilih barang dan depo terlebih dahulu!");
+
+        const formData = new URLSearchParams();
+        formData.append('action', 'saveKartu');
+        formData.append('kode', kode);
+        formData.append('namaItem', namaItem);
+        formData.append('kategori', document.getElementById('kartuKategori').value || 'Obat');
+        formData.append('depo', depo);
+        formData.append('jenis', jenis);
+        formData.append('jumlah', jumlah);
+        formData.append('keterangan', keterangan);
+
+        try {
+            const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (result.success) {
+                showMessage(result.message + " (Sisa: " + result.sisa + ")", 'success');
+                resetKartuForm();
+                loadKartu();
+            } else {
+                showMessage(result.error || 'Gagal menyimpan kartu', 'error');
+            }
+        } catch (error) { showMessage("Koneksi gagal!", 'error'); }
+    }
+
+    function resetKartuForm() {
+        document.getElementById('kartuMasterSelect').value = '';
+        document.getElementById('kartuKode').value = '';
+        document.getElementById('kartuNama').value = '';
+        document.getElementById('kartuJumlah').value = 0;
+        document.getElementById('kartuKeterangan').value = '';
+    }
+
+    // ====== FUNGSI LAINNYA (Input Data, Table, Master, Print) TETAP SAMA ======
     function autoCalc() {
         const awal = parseFloat(document.getElementById('stokAwal').value) || 0;
         const masuk = parseFloat(document.getElementById('stokMasuk').value) || 0;
@@ -268,18 +394,15 @@
         document.getElementById('masterSelect').value = '';
     }
 
-    // ====== MASTER DROPDOWN (Nama Obat) ======
     async function loadMasterDropdown() {
         try {
             const res = await safeFetch(`${scriptURL}?action=getMaster`);
             const json = await res.json();
             const select = document.getElementById('masterSelect');
             select.innerHTML = '<option value="">-- Pilih Nama Obat / BMHP --</option>';
-            
             if (json.data && json.data.length > 0) {
                 json.data.forEach(item => {
                     const opt = document.createElement('option');
-                    // Tampilkan Nama Item, bukan Kode/ID!
                     opt.value = item.NamaItem;
                     opt.textContent = item.NamaItem;
                     opt.dataset.kode = item.Kode || '';
@@ -296,7 +419,6 @@
         const select = document.getElementById('masterSelect');
         const selected = select.selectedOptions[0];
         if (!selected || selected.value === '') return;
-
         document.getElementById('kode').value = selected.dataset.kode || '';
         document.getElementById('namaItem').value = selected.value;
         document.getElementById('kategori').value = selected.dataset.kategori || 'Obat';
@@ -305,26 +427,6 @@
         autoCalc();
     }
 
-    // ====== LOAD MASTER TABLE ======
-    async function loadMasterData() {
-        try {
-            const res = await safeFetch(`${scriptURL}?action=getMaster`);
-            const json = await res.json();
-            const tbody = document.getElementById('masterBody');
-            tbody.innerHTML = '';
-            if (!json.data || json.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6">Belum ada data master</td></tr>';
-                return;
-            }
-            json.data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Kategori || '-'}</td><td>${item.Satuan || '-'}</td><td>${formatRupiah(item.HargaSatuan || 0)}</td><td><button class="action-btn btn-edit" onclick="isiDariMasterById('${item.Kode}')">Pilih</button></td>`;
-                tbody.appendChild(tr);
-            });
-        } catch (e) { showMessage("Gagal memuat Master: " + e.message, 'error'); }
-    }
-
-    // ====== DATA & TABEL ======
     async function loadDataAndSummary() {
         const bulan = document.getElementById('filterBulan').value;
         const tahun = document.getElementById('filterTahun').value;
@@ -353,10 +455,7 @@
     function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Belum ada data</td></tr>';
-            return;
-        }
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Belum ada data</td></tr>'; return; }
         data.forEach(item => {
             const id = item.ID || '';
             const tr = document.createElement('tr');
@@ -365,10 +464,10 @@
         });
     }
 
-    // ====== CRUD ======
     async function submitData() {
         const formData = new URLSearchParams();
         formData.append('action', 'save');
+        formData.append('id', document.getElementById('itemId').value);
         formData.append('bulan', document.getElementById('bulan').value);
         formData.append('tahun', document.getElementById('tahun').value);
         const items = [{ kode: document.getElementById('kode').value, namaItem: document.getElementById('namaItem').value, kategori: document.getElementById('kategori').value, depo: document.getElementById('depo').value, satuan: document.getElementById('satuan').value, stokAwal: document.getElementById('stokAwal').value, stokMasuk: document.getElementById('stokMasuk').value, stokKeluar: document.getElementById('stokKeluar').value, stokAkhir: document.getElementById('stokAkhir').value, hargaSatuan: document.getElementById('hargaSatuan').value }];
@@ -378,12 +477,8 @@
         try {
             const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
             const result = await response.json();
-            if (result.success) {
-                showMessage(result.message, 'success');
-                resetForm();
-                showSection('section-tabel');
-                loadTable();
-            } else { showMessage(result.error || 'Gagal menyimpan', 'error'); }
+            if (result.success) { showMessage(result.message, 'success'); resetForm(); showSection('section-tabel'); loadTable(); }
+            else { showMessage(result.error || 'Gagal menyimpan', 'error'); }
         } catch (error) { showMessage("Koneksi ke server gagal.", 'error'); }
     }
 
@@ -429,16 +524,13 @@
         } catch (e) { showMessage("Koneksi gagal!", 'error'); }
     }
 
-    // ====== PRINT PREVIEW F4 ======
     async function generatePrintPreview() {
         const bulan = document.getElementById('laporanBulan').value;
         const tahun = document.getElementById('laporanTahun').value;
         const depo = document.getElementById('laporanDepo').value;
-
         document.getElementById('printPeriode').innerText = `Bulan: ${bulan} Tahun: ${tahun}`;
         document.getElementById('printDepo').innerText = `Depo: ${depo || 'Semua'}`;
         document.getElementById('printDate').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
         try {
             const dataRes = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const json = await dataRes.json();
@@ -446,26 +538,112 @@
             const tbody = document.getElementById('printBody');
             tbody.innerHTML = '';
             let totalStok = 0, totalNilai = 0;
-
             data.forEach((item, index) => {
                 const stok = item.StokAkhir || 0;
                 const nilai = item.TotalNilai || 0;
-                totalStok += stok;
-                totalNilai += nilai;
+                totalStok += stok; totalNilai += nilai;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td style="text-align: center;">${index + 1}</td><td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Kategori || '-'}</td><td>${item.Satuan || '-'}</td><td style="text-align: right;">${stok}</td><td style="text-align: right;">${formatRupiah(item.HargaSatuan || 0)}</td><td style="text-align: right;">${formatRupiah(nilai)}</td>`;
                 tbody.appendChild(tr);
             });
-
             document.getElementById('printTotalStok').innerText = totalStok;
             document.getElementById('printTotalNilai').innerText = formatRupiah(totalNilai);
             window.print();
         } catch (error) { alert("Gagal membuat laporan: " + error.message); }
     }
 
-    // ====== UTIL ======
     function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
     function showMessage(msg, type) { const div = document.getElementById('message'); div.className = type; div.textContent = msg; setTimeout(() => div.textContent = '', 5000); }
+
+    // ====== MASTER DATA CRUD ======
+    async function loadMasterData() {
+        try {
+            const res = await safeFetch(`${scriptURL}?action=getMaster`);
+            const json = await res.json();
+            const tbody = document.getElementById('masterBody');
+            tbody.innerHTML = '';
+            if (!json.data || json.data.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Belum ada data master</td></tr>'; return; }
+            json.data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Kategori || '-'}</td><td>${item.Satuan || '-'}</td><td>${formatRupiah(item.HargaSatuan || 0)}</td><td><button class="action-btn btn-edit" onclick="isiDariMasterById('${item.Kode}')">Pilih</button> <button class="action-btn btn-delete" onclick="deleteMaster('${item.Kode}')">Hapus</button></td>`;
+                tbody.appendChild(tr);
+            });
+        } catch (e) { showMessage("Gagal memuat Master: " + e.message, 'error'); }
+    }
+
+    function isiDariMasterById(kode) {
+        const allRows = document.querySelectorAll('#masterBody tr');
+        let item = null;
+        allRows.forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            if (cells[0] && cells[0].innerText === kode) {
+                item = { Kode: cells[0].innerText, NamaItem: cells[1].innerText, Kategori: cells[2].innerText, Satuan: cells[3].innerText, HargaSatuan: parseFloat(cells[4].innerText.replace(/[^\d]/g, '')) || 0 };
+            }
+        });
+        if (item) {
+            document.getElementById('kode').value = item.Kode;
+            document.getElementById('namaItem').value = item.NamaItem;
+            document.getElementById('kategori').value = item.Kategori;
+            document.getElementById('satuan').value = item.Satuan;
+            document.getElementById('hargaSatuan').value = item.HargaSatuan;
+            showSection('section-input');
+        }
+    }
+
+    async function saveNewMaster() {
+        const kode = document.getElementById('masterKode').value;
+        const nama = document.getElementById('masterNama').value;
+        if (!kode || !nama) return alert("Kode dan Nama harus diisi!");
+        const formData = new URLSearchParams();
+        formData.append('action', 'saveMaster');
+        formData.append('items', JSON.stringify([{ kode: kode, namaItem: nama, kategori: document.getElementById('masterKategori').value, satuan: document.getElementById('masterSatuan').value, hargaSatuan: document.getElementById('masterHarga').value }]));
+        try {
+            const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (result.success) { showMessage(result.message, 'success'); document.getElementById('masterKode').value = ''; document.getElementById('masterNama').value = ''; document.getElementById('masterSatuan').value = ''; document.getElementById('masterHarga').value = 0; loadMasterData(); loadMasterDropdown(); loadKartuDropdown(); }
+            else { showMessage(result.error || 'Gagal menyimpan', 'error'); }
+        } catch (error) { showMessage("Koneksi gagal.", 'error'); }
+    }
+
+    async function deleteMaster(kode) {
+        if(!confirm("Yakin ingin menghapus master ini?")) return;
+        const formData = new URLSearchParams();
+        formData.append('action', 'deleteMaster');
+        formData.append('kode', kode);
+        try {
+            const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (result.success) { showMessage(result.message, 'success'); loadMasterData(); loadMasterDropdown(); loadKartuDropdown(); }
+            else { showMessage(result.error || 'Gagal menghapus', 'error'); }
+        } catch (e) { showMessage("Koneksi gagal!", 'error'); }
+    }
+
+    function uploadCsv() {
+        const fileInput = document.getElementById('csvFileInput');
+        const file = fileInput.files[0];
+        if (!file) return alert("Pilih file CSV terlebih dahulu!");
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+            const items = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(';');
+                if (cols.length >= 5) {
+                    items.push({ kode: cols[0].trim(), namaItem: cols[1].trim(), kategori: cols[2].trim(), satuan: cols[3].trim(), hargaSatuan: parseFloat(cols[4].trim()) || 0 });
+                }
+            }
+            if (items.length === 0) return alert("Data CSV kosong atau format salah!");
+            const formData = new URLSearchParams();
+            formData.append('action', 'saveMaster');
+            formData.append('items', JSON.stringify(items));
+            safeFetch(scriptURL, { method: 'POST', body: formData }).then(res => res.json()).then(result => {
+                if (result.success) { alert(result.message); loadMasterData(); loadMasterDropdown(); loadKartuDropdown(); fileInput.value = ''; }
+                else { alert(result.error); }
+            }).catch(err => alert("Gagal upload CSV: " + err.message));
+        };
+        reader.readAsText(file);
+    }
 
     // ====== CEK SESSION & HAK AKSES ======
     const username = localStorage.getItem('username');
@@ -476,6 +654,7 @@
         document.getElementById('userLabel').innerText = `User: ${username} (${role})`;
         
         if (role === 'depo' && userDepo) {
+            // Kunci Depo untuk user depo (IGD, Rawat Jalan, Gudang Farmasi, dll)
             document.getElementById('depo').value = userDepo;
             document.getElementById('depo').disabled = true;
             document.getElementById('filterDepo').value = userDepo;
@@ -485,11 +664,15 @@
             document.getElementById('laporanDepo').value = userDepo;
             document.getElementById('laporanDepo').disabled = true;
             
-            // SEMBUNYIKAN MENU MASTER UNTUK NON-ADMIN
+            // Kunci Depo di Kartu Stok
+            document.getElementById('kartuDepo').value = userDepo;
+            document.getElementById('kartuDepo').disabled = true;
+
+            // Sembunyikan Menu Master Data untuk user non-admin
             document.getElementById('menu-master').style.display = 'none';
         }
         
-        // TAMPILKAN MENU MASTER UNTUK ADMIN
+        // Tampilkan Menu Master Data hanya untuk Admin
         if (role === 'admin') {
             document.getElementById('menu-master').style.display = 'block';
         }
@@ -505,7 +688,8 @@
         
         showSection('section-dashboard');
         loadDataAndSummary();
-        loadMasterDropdown(); // Muat dropdown nama obat
+        loadMasterDropdown();
+        loadKartuDropdown();
     };
 </script>
 </body>
