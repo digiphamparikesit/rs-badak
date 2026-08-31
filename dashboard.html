@@ -9,6 +9,7 @@
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .app-container { display: flex; min-height: 100vh; }
         
+        /* SIDEBAR */
         .sidebar { width: 250px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 20px; text-align: center; background-color: #34495e; border-bottom: 2px solid #1abc9c; }
         .sidebar-header h2 { font-size: 18px; margin: 0; }
@@ -18,11 +19,13 @@
         .menu-item.active { background-color: #1abc9c; color: white; font-weight: bold; }
         .sidebar-footer { padding: 20px; border-top: 1px solid #34495e; }
         
+        /* KONTEN UTAMA */
         .main-content { flex: 1; padding: 20px; overflow-x: hidden; }
         .page-title { margin-bottom: 20px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
         #message { margin-bottom: 15px; text-align: center; font-weight: bold; }
         .success { color: green; } .error { color: red; } .loading { color: #555; }
         
+        /* SISTEM MENU TAB (Klik 1 menu, hanya 1 yang muncul) */
         .section { display: none; }
         .section.active { display: block; }
 
@@ -53,6 +56,7 @@
         .btn-edit { background-color: #ffc107; color: white; }
         .btn-delete { background-color: #dc3545; color: white; }
         
+        /* AREA PRINT */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -79,7 +83,6 @@
             <a class="menu-item" id="menu-input" onclick="showSection('section-input')">📝 Input Data</a>
             <a class="menu-item" id="menu-tabel" onclick="showSection('section-tabel')">📋 Tabel Stok</a>
             <a class="menu-item" id="menu-laporan" onclick="showSection('section-laporan')">📄 Laporan Bulanan</a>
-            <!-- Menu Master Data hanya muncul untuk Admin -->
             <a class="menu-item" id="menu-master" style="display: none;" onclick="showSection('section-master')">🗂️ Master Data</a>
         </nav>
         <div class="sidebar-footer">
@@ -92,7 +95,7 @@
         <h2 class="page-title">Dashboard Stock Opname</h2>
         <div id="message"></div>
 
-        <!-- SECTION 1: DASHBOARD -->
+        <!-- MENU: DASHBOARD -->
         <div id="section-dashboard" class="section">
             <div id="summaryCards" class="summary-cards">
                 <div class="card"><h3>Total Item</h3><p id="totalItem">0</p></div>
@@ -100,7 +103,6 @@
                 <div class="card"><h3>Total Obat</h3><p id="totalObat">Rp 0</p></div>
                 <div class="card"><h3>Total BMHP</h3><p id="totalBMHP">Rp 0</p></div>
             </div>
-            
             <div class="filter-section">
                 <div class="filter-group"><label>Bulan</label><select id="filterBulan"><option value="">Semua</option><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
                 <div class="filter-group"><label>Tahun</label><input type="number" id="filterTahun" placeholder="2024"></div>
@@ -110,20 +112,21 @@
             </div>
         </div>
 
-        <!-- SECTION 2: INPUT DATA -->
+        <!-- MENU: INPUT DATA (Dengan Dropdown Master) -->
         <div id="section-input" class="section">
             <div class="form-section">
                 <h3 style="margin-bottom: 15px;">Input / Edit Data Stock</h3>
                 <form id="itemForm">
                     <input type="hidden" id="itemId">
                     <div class="form-grid">
-                        <!-- Dropdown Master untuk Semua User -->
+                        <!-- DROPDOWN MASTER DATA (Nama Obat) -->
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label>Pilih dari Master Data (Otomatis Mengisi)</label>
                             <select id="masterSelect" onchange="isiDariMaster()">
-                                <option value="">-- Pilih Barang --</option>
+                                <option value="">-- Pilih Nama Obat / BMHP --</option>
                             </select>
                         </div>
+
                         <div class="form-group"><label>Kode Barang</label><input type="text" id="kode" required></div>
                         <div class="form-group"><label>Nama Item</label><input type="text" id="namaItem" required></div>
                         <div class="form-group"><label>Kategori</label><select id="kategori"><option value="Obat">Obat</option><option value="BMHP">BMHP</option></select></div>
@@ -139,11 +142,7 @@
                     <div class="form-group" style="margin-top: 10px;">
                         <label>Bulan & Tahun</label>
                         <div style="display: flex; gap: 10px;">
-                            <select id="bulan" style="width: 50%;">
-                                <option>Januari</option><option>Februari</option><option>Maret</option><option>April</option>
-                                <option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option>
-                                <option>September</option><option>Oktober</option><option>November</option><option>Desember</option>
-                            </select>
+                            <select id="bulan" style="width: 50%;"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select>
                             <input type="number" id="tahun" placeholder="2024" style="width: 50%;" required>
                         </div>
                     </div>
@@ -153,7 +152,7 @@
             </div>
         </div>
 
-        <!-- SECTION 3: TABEL STOK -->
+        <!-- MENU: TABEL STOK -->
         <div id="section-tabel" class="section">
             <div class="table-section">
                 <h3>Data Stock Opname</h3>
@@ -167,11 +166,11 @@
             </div>
         </div>
 
-        <!-- SECTION 4: LAPORAN BULANAN -->
+        <!-- MENU: LAPORAN BULANAN -->
         <div id="section-laporan" class="section">
             <div class="form-section">
                 <h3>Laporan Bulanan</h3>
-                <p style="margin-bottom: 15px; font-size: 14px; color: #666;">Pilih Bulan dan Tahun, lalu klik tombol Print untuk mencetak laporan sisa persediaan.</p>
+                <p style="margin-bottom: 15px; font-size: 14px; color: #666;">Pilih Bulan dan Tahun, lalu klik tombol Print.</p>
                 <div class="filter-section" style="padding: 0; box-shadow: none;">
                     <div class="filter-group"><label>Bulan</label><select id="laporanBulan"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
                     <div class="filter-group"><label>Tahun</label><input type="number" id="laporanTahun" placeholder="2024"></div>
@@ -181,11 +180,11 @@
             </div>
         </div>
 
-        <!-- SECTION 5: MASTER DATA (HANYA UNTUK ADMIN) -->
+        <!-- MENU: MASTER DATA (Hanya Admin) -->
         <div id="section-master" class="section">
             <div class="form-section">
                 <h3>Master Data Obat & BMHP</h3>
-                <p style="color: #666; font-size: 14px;">Kelola data master obat di bawah ini.</p>
+                <p style="color: #666; font-size: 14px;">Kelola data master obat.</p>
                 <table><thead><tr><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Satuan</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="masterBody"></tbody></table>
             </div>
         </div>
@@ -211,9 +210,11 @@
 </div>
 
 <script>
+    // URL TIDAK DIHAPUS SESUAI PERMINTAAN
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwcLhFx1_0BmQ8qUTEcOthMzDOzyujDSJlscH6QXKCb91L0sE1ksaKrAVXfjAN4j4D7xw/exec';
     const proxyList = ['https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?'];
 
+    // ====== SAFE FETCH ======
     async function safeFetch(url, options = {}) {
         let res;
         try { res = await fetch(url, options); } catch (e) {
@@ -225,24 +226,20 @@
                 } catch (e2) { continue; }
             }
         }
-        if (!res) throw new Error("Semua koneksi (langsung & proxy) gagal.");
+        if (!res) throw new Error("Semua koneksi gagal.");
         if (!res.ok) throw new Error(`Server Error: ${res.status}`);
         const contentType = res.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-            await res.text();
-            throw new Error("Server tidak mengembalikan JSON. Pastikan akses 'Siapa saja'.");
-        }
+        if (!contentType.includes("application/json")) throw new Error("Server tidak mengembalikan JSON.");
         return res;
     }
 
+    // ====== NAVIGASI MENU ======
     function showSection(sectionId) {
-        const sections = document.querySelectorAll('.section');
-        sections.forEach(section => section.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         const activeSection = document.getElementById(sectionId);
         if (activeSection) activeSection.classList.add('active');
 
-        const menus = document.querySelectorAll('.menu-item');
-        menus.forEach(menu => menu.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
         const activeMenuId = 'menu-' + sectionId.replace('section-', '');
         const activeMenu = document.getElementById(activeMenuId);
         if (activeMenu) activeMenu.classList.add('active');
@@ -252,6 +249,7 @@
 
     function logout() { localStorage.clear(); window.location.href = "index.html"; }
 
+    // ====== FORM DAN KALKULASI ======
     function autoCalc() {
         const awal = parseFloat(document.getElementById('stokAwal').value) || 0;
         const masuk = parseFloat(document.getElementById('stokMasuk').value) || 0;
@@ -267,84 +265,70 @@
         document.getElementById('itemId').value = '';
         document.getElementById('stokAkhir').value = 0;
         document.getElementById('totalNilai').value = 0;
+        document.getElementById('masterSelect').value = '';
     }
 
-    // LOAD MASTER DATA (Untuk Menu Admin)
-    async function loadMasterData() {
-        try {
-            const res = await safeFetch(`${scriptURL}?action=getMaster`);
-            const json = await res.json();
-            const tbody = document.getElementById('masterBody');
-            tbody.innerHTML = '';
-            
-            if (!json.data || json.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data master</td></tr>';
-                return;
-            }
-
-            json.data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.Kode || '-'}</td>
-                    <td>${item.NamaItem || '-'}</td>
-                    <td>${item.Kategori || '-'}</td>
-                    <td>${item.Satuan || '-'}</td>
-                    <td>${formatRupiah(item.HargaSatuan || 0)}</td>
-                    <td><button class="action-btn btn-edit" onclick="editDataByMaster('${item.Kode}')">Pilih</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } catch (e) {
-            console.error(e);
-            showMessage("Gagal memuat Master Data: " + e.message, 'error');
-        }
-    }
-
-    // LOAD DROPDOWN MASTER (Untuk Semua User di Form Input)
+    // ====== MASTER DROPDOWN (Nama Obat) ======
     async function loadMasterDropdown() {
         try {
             const res = await safeFetch(`${scriptURL}?action=getMaster`);
             const json = await res.json();
             const select = document.getElementById('masterSelect');
-            select.innerHTML = '<option value="">-- Pilih Barang --</option>';
+            select.innerHTML = '<option value="">-- Pilih Nama Obat / BMHP --</option>';
             
             if (json.data && json.data.length > 0) {
                 json.data.forEach(item => {
                     const opt = document.createElement('option');
-                    opt.value = item.Kode;
-                    opt.textContent = `${item.NamaItem} (${item.Kode})`;
-                    opt.dataset.nama = item.NamaItem || '';
+                    // Tampilkan Nama Item, bukan Kode/ID!
+                    opt.value = item.NamaItem;
+                    opt.textContent = item.NamaItem;
+                    opt.dataset.kode = item.Kode || '';
                     opt.dataset.kategori = item.Kategori || 'Obat';
                     opt.dataset.satuan = item.Satuan || '';
                     opt.dataset.harga = item.HargaSatuan || 0;
                     select.appendChild(opt);
                 });
             }
-        } catch (e) {
-            console.error('Gagal memuat dropdown master:', e);
-        }
+        } catch (e) { console.error('Gagal memuat dropdown:', e); }
     }
 
-    // ISI FORM DARI DROPDOWN MASTER
     function isiDariMaster() {
         const select = document.getElementById('masterSelect');
         const selected = select.selectedOptions[0];
         if (!selected || selected.value === '') return;
 
-        document.getElementById('kode').value = selected.value;
-        document.getElementById('namaItem').value = selected.dataset.nama || '';
+        document.getElementById('kode').value = selected.dataset.kode || '';
+        document.getElementById('namaItem').value = selected.value;
         document.getElementById('kategori').value = selected.dataset.kategori || 'Obat';
         document.getElementById('satuan').value = selected.dataset.satuan || '';
         document.getElementById('hargaSatuan').value = selected.dataset.harga || 0;
         autoCalc();
     }
 
-    // LOAD DATA & SUMMARY
+    // ====== LOAD MASTER TABLE ======
+    async function loadMasterData() {
+        try {
+            const res = await safeFetch(`${scriptURL}?action=getMaster`);
+            const json = await res.json();
+            const tbody = document.getElementById('masterBody');
+            tbody.innerHTML = '';
+            if (!json.data || json.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">Belum ada data master</td></tr>';
+                return;
+            }
+            json.data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Kategori || '-'}</td><td>${item.Satuan || '-'}</td><td>${formatRupiah(item.HargaSatuan || 0)}</td><td><button class="action-btn btn-edit" onclick="isiDariMasterById('${item.Kode}')">Pilih</button></td>`;
+                tbody.appendChild(tr);
+            });
+        } catch (e) { showMessage("Gagal memuat Master: " + e.message, 'error'); }
+    }
+
+    // ====== DATA & TABEL ======
     async function loadDataAndSummary() {
         const bulan = document.getElementById('filterBulan').value;
         const tahun = document.getElementById('filterTahun').value;
         const depo = document.getElementById('filterDepo').value;
-
         try {
             const summaryRes = await safeFetch(`${scriptURL}?action=getSummary&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const summary = await summaryRes.json();
@@ -352,13 +336,9 @@
             document.getElementById('totalNilaiDisplay').innerText = "Rp " + formatRupiah(summary.totalNilai || 0);
             document.getElementById('totalObat').innerText = "Rp " + formatRupiah(summary.totalObat || 0);
             document.getElementById('totalBMHP').innerText = "Rp " + formatRupiah(summary.totalBMHP || 0);
-        } catch (error) {
-            console.error('Error:', error);
-            showMessage("Gagal mengambil data: " + error.message, 'error');
-        }
+        } catch (error) { showMessage("Gagal mengambil summary: " + error.message, 'error'); }
     }
 
-    // LOAD TABEL
     async function loadTable() {
         const bulan = document.getElementById('filterBulanTabel').value;
         const tahun = document.getElementById('filterTahunTabel').value;
@@ -367,10 +347,7 @@
             const dataRes = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const dataJson = await dataRes.json();
             renderTable(dataJson.data || []);
-        } catch (error) {
-            console.error('Error:', error);
-            showMessage("Gagal mengambil data tabel: " + error.message, 'error');
-        }
+        } catch (error) { showMessage("Gagal mengambil tabel: " + error.message, 'error'); }
     }
 
     function renderTable(data) {
@@ -382,21 +359,13 @@
         }
         data.forEach(item => {
             const id = item.ID || '';
-            const kode = item.Kode || '-';
-            const nama = item.NamaItem || '-';
-            const kategori = item.Kategori || '-';
-            const depo = item.Depo || '-';
-            const stok = item.StokAkhir || 0;
-            const harga = item.HargaSatuan || 0;
-            const total = item.TotalNilai || 0;
-
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${kode}</td><td>${nama}</td><td>${kategori}</td><td>${depo}</td><td>${stok}</td><td>${formatRupiah(harga)}</td><td>${formatRupiah(total)}</td><td><button class="action-btn btn-edit" onclick="editData('${id}')">Edit</button><button class="action-btn btn-delete" onclick="deleteData('${id}')">Hapus</button></td>`;
+            tr.innerHTML = `<td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Kategori || '-'}</td><td>${item.Depo || '-'}</td><td>${item.StokAkhir || 0}</td><td>${formatRupiah(item.HargaSatuan || 0)}</td><td>${formatRupiah(item.TotalNilai || 0)}</td><td><button class="action-btn btn-edit" onclick="editData('${id}')">Edit</button><button class="action-btn btn-delete" onclick="deleteData('${id}')">Hapus</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
-    // SUBMIT DATA
+    // ====== CRUD ======
     async function submitData() {
         const formData = new URLSearchParams();
         formData.append('action', 'save');
@@ -414,11 +383,10 @@
                 resetForm();
                 showSection('section-tabel');
                 loadTable();
-            } else { showMessage(result.error || 'Gagal menyimpan data', 'error'); }
-        } catch (error) { console.error(error); showMessage("Koneksi ke server gagal.", 'error'); }
+            } else { showMessage(result.error || 'Gagal menyimpan', 'error'); }
+        } catch (error) { showMessage("Koneksi ke server gagal.", 'error'); }
     }
 
-    // EDIT DATA
     async function editData(id) {
         if (!id) return alert("Data tidak valid");
         try {
@@ -448,7 +416,6 @@
         } catch (e) { alert("Gagal memuat data untuk diedit"); }
     }
 
-    // DELETE DATA
     async function deleteData(id) {
         if(!confirm("Yakin ingin menghapus?")) return;
         const formData = new URLSearchParams();
@@ -462,7 +429,7 @@
         } catch (e) { showMessage("Koneksi gagal!", 'error'); }
     }
 
-    // PRINT PREVIEW
+    // ====== PRINT PREVIEW F4 ======
     async function generatePrintPreview() {
         const bulan = document.getElementById('laporanBulan').value;
         const tahun = document.getElementById('laporanTahun').value;
@@ -476,45 +443,31 @@
             const dataRes = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const json = await dataRes.json();
             const data = json.data || [];
-
             const tbody = document.getElementById('printBody');
             tbody.innerHTML = '';
-            let totalStok = 0;
-            let totalNilai = 0;
+            let totalStok = 0, totalNilai = 0;
 
             data.forEach((item, index) => {
                 const stok = item.StokAkhir || 0;
-                const harga = item.HargaSatuan || 0;
                 const nilai = item.TotalNilai || 0;
                 totalStok += stok;
                 totalNilai += nilai;
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td style="text-align: center;">${index + 1}</td><td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Kategori || '-'}</td><td>${item.Satuan || '-'}</td><td style="text-align: right;">${stok}</td><td style="text-align: right;">${formatRupiah(harga)}</td><td style="text-align: right;">${formatRupiah(nilai)}</td>`;
+                tr.innerHTML = `<td style="text-align: center;">${index + 1}</td><td>${item.Kode || '-'}</td><td>${item.NamaItem || '-'}</td><td>${item.Kategori || '-'}</td><td>${item.Satuan || '-'}</td><td style="text-align: right;">${stok}</td><td style="text-align: right;">${formatRupiah(item.HargaSatuan || 0)}</td><td style="text-align: right;">${formatRupiah(nilai)}</td>`;
                 tbody.appendChild(tr);
             });
 
             document.getElementById('printTotalStok').innerText = totalStok;
             document.getElementById('printTotalNilai').innerText = formatRupiah(totalNilai);
             window.print();
-
-        } catch (error) {
-            console.error('Gagal membuat preview:', error);
-            alert("Gagal memuat data untuk laporan: " + error.message);
-        }
+        } catch (error) { alert("Gagal membuat laporan: " + error.message); }
     }
 
-    function formatRupiah(angka) {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-    }
+    // ====== UTIL ======
+    function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
+    function showMessage(msg, type) { const div = document.getElementById('message'); div.className = type; div.textContent = msg; setTimeout(() => div.textContent = '', 5000); }
 
-    function showMessage(msg, type) {
-        const msgDiv = document.getElementById('message');
-        msgDiv.className = type;
-        msgDiv.textContent = msg;
-        setTimeout(() => { msgDiv.textContent = ''; }, 5000);
-    }
-
-    // CEK SESSION & HAK AKSES
+    // ====== CEK SESSION & HAK AKSES ======
     const username = localStorage.getItem('username');
     const role = localStorage.getItem('userRole');
     const userDepo = localStorage.getItem('userDepo');
@@ -532,16 +485,17 @@
             document.getElementById('laporanDepo').value = userDepo;
             document.getElementById('laporanDepo').disabled = true;
             
-            // HIDDEN MENU MASTER DATA UNTUK NON-ADMIN
+            // SEMBUNYIKAN MENU MASTER UNTUK NON-ADMIN
             document.getElementById('menu-master').style.display = 'none';
         }
         
+        // TAMPILKAN MENU MASTER UNTUK ADMIN
         if (role === 'admin') {
             document.getElementById('menu-master').style.display = 'block';
         }
     }
 
-    // Initial Load
+    // ====== INITIAL LOAD ======
     window.onload = function() {
         const currentYear = new Date().getFullYear();
         document.getElementById('tahun').value = currentYear;
@@ -551,7 +505,7 @@
         
         showSection('section-dashboard');
         loadDataAndSummary();
-        loadMasterDropdown(); // PENTING: Muat dropdown untuk semua user
+        loadMasterDropdown(); // Muat dropdown nama obat
     };
 </script>
 </body>
