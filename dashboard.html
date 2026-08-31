@@ -78,12 +78,12 @@
     <div class="sidebar">
         <div class="sidebar-header"><h2>Stock Opname</h2><small>Sistem Informasi</small></div>
         <nav class="sidebar-menu">
-            <!-- Ubah onclick menjadi showSection -->
             <a class="menu-item" id="menu-dashboard" onclick="showSection('section-dashboard')">📊 Dashboard / Rekap</a>
             <a class="menu-item" id="menu-input" onclick="showSection('section-input')">📝 Input Data</a>
             <a class="menu-item" id="menu-tabel" onclick="showSection('section-tabel')">📋 Tabel Stok</a>
             <a class="menu-item" id="menu-laporan" onclick="showSection('section-laporan')">📄 Laporan Bulanan</a>
-            <a class="menu-item" id="menu-master" onclick="showSection('section-master')">🗂️ Master Data</a>
+            <!-- Menu Master Data akan disembunyikan otomatis jika bukan Admin -->
+            <a class="menu-item" id="menu-master" style="display: none;" onclick="showSection('section-master')">🗂️ Master Data</a>
         </nav>
         <div class="sidebar-footer">
             <span id="userLabel" style="font-size: 12px; display: block; margin-bottom: 10px;">User: -</span>
@@ -95,7 +95,7 @@
         <h2 class="page-title">Dashboard Stock Opname</h2>
         <div id="message"></div>
 
-        <!-- SECTION 1: DASHBOARD (Hanya muncul saat menu Dashboard diklik) -->
+        <!-- SECTION 1: DASHBOARD -->
         <div id="section-dashboard" class="section">
             <div id="summaryCards" class="summary-cards">
                 <div class="card"><h3>Total Item</h3><p id="totalItem">0</p></div>
@@ -111,11 +111,9 @@
                 <button class="btn-filter" onclick="loadDataAndSummary()">Cari Data</button>
                 <button class="btn-reset" onclick="resetFilter()">Reset</button>
             </div>
-            
-            <!-- Tampilkan 4 kartu ringkasan di sini -->
         </div>
 
-        <!-- SECTION 2: INPUT DATA (Hanya muncul saat menu Input diklik) -->
+        <!-- SECTION 2: INPUT DATA -->
         <div id="section-input" class="section">
             <div class="form-section">
                 <h3 style="margin-bottom: 15px;">Input / Edit Data Stock</h3>
@@ -151,7 +149,7 @@
             </div>
         </div>
 
-        <!-- SECTION 3: TABEL STOK (Hanya muncul saat menu Tabel diklik) -->
+        <!-- SECTION 3: TABEL STOK -->
         <div id="section-tabel" class="section">
             <div class="table-section">
                 <h3>Data Stock Opname</h3>
@@ -170,7 +168,6 @@
             <div class="form-section">
                 <h3>Laporan Bulanan</h3>
                 <p style="margin-bottom: 15px; font-size: 14px; color: #666;">Pilih Bulan dan Tahun, lalu klik tombol Print untuk mencetak laporan sisa persediaan.</p>
-                
                 <div class="filter-section" style="padding: 0; box-shadow: none;">
                     <div class="filter-group"><label>Bulan</label><select id="laporanBulan"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
                     <div class="filter-group"><label>Tahun</label><input type="number" id="laporanTahun" placeholder="2024"></div>
@@ -180,21 +177,19 @@
             </div>
         </div>
 
-        <!-- SECTION 5: MASTER DATA -->
+        <!-- SECTION 5: MASTER DATA (Hanya untuk Admin) -->
         <div id="section-master" class="section">
             <div class="form-section">
-                <h3>Master Data</h3>
-                <p style="color: #666; font-size: 14px;">Fitur ini digunakan untuk mengelola master obat (kode, nama, satuan, dll).</p>
-                <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center; color: #888;">
-                    <p><i>Silakan integrasikan tabel master obat di sini.</i></p>
-                </div>
+                <h3>Master Data Obat & BMHP</h3>
+                <p style="color: #666; font-size: 14px;">Kelola data master obat di bawah ini.</p>
+                <table><thead><tr><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Satuan</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="masterBody"></tbody></table>
             </div>
         </div>
 
     </div>
 </div>
 
-<!-- AREA PRINT (Tetap tersembunyi, hanya muncul saat print) -->
+<!-- AREA PRINT -->
 <div id="printArea">
     <div class="print-layout">
         <div class="print-header">
@@ -220,7 +215,6 @@
         'https://corsproxy.io/?'
     ];
 
-    // FUNGSI FETCH ANTI ERROR JSON
     async function safeFetch(url, options = {}) {
         let res;
         try {
@@ -244,38 +238,29 @@
         return res;
     }
 
-    // ==========================================
-    // FUNGSI NAVIGASI MENU (KUNCI PERBAIKAN)
-    // ==========================================
+    // FUNGSI NAVIGASI MENU
     function showSection(sectionId) {
-        // Sembunyikan semua section
         const sections = document.querySelectorAll('.section');
         sections.forEach(section => section.classList.remove('active'));
 
-        // Tampilkan section yang dipilih
         const activeSection = document.getElementById(sectionId);
-        if (activeSection) {
-            activeSection.classList.add('active');
-        }
+        if (activeSection) activeSection.classList.add('active');
 
-        // Update highlight menu sidebar
         const menus = document.querySelectorAll('.menu-item');
         menus.forEach(menu => menu.classList.remove('active'));
         
-        // Mapping ID section ke ID menu
         const activeMenuId = 'menu-' + sectionId.replace('section-', '');
         const activeMenu = document.getElementById(activeMenuId);
-        if (activeMenu) {
-            activeMenu.classList.add('active');
+        if (activeMenu) activeMenu.classList.add('active');
+
+        // Khusus untuk Master Data: Muat data saat menu dibuka
+        if (sectionId === 'section-master') {
+            loadMasterData();
         }
     }
 
-    // Fungsi Logout
     function logout() { localStorage.clear(); window.location.href = "index.html"; }
 
-    // ==========================================
-    // FUNGSI DATA
-    // ==========================================
     function autoCalc() {
         const awal = parseFloat(document.getElementById('stokAwal').value) || 0;
         const masuk = parseFloat(document.getElementById('stokMasuk').value) || 0;
@@ -293,7 +278,57 @@
         document.getElementById('totalNilai').value = 0;
     }
 
-    // Load Dashboard & Summary
+    // LOAD MASTER DATA
+    async function loadMasterData() {
+        try {
+            const res = await safeFetch(`${scriptURL}?action=getMaster`);
+            const json = await res.json();
+            const tbody = document.getElementById('masterBody');
+            tbody.innerHTML = '';
+            
+            if (!json.data || json.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data master</td></tr>';
+                return;
+            }
+
+            json.data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.Kode || '-'}</td>
+                    <td>${item.NamaItem || '-'}</td>
+                    <td>${item.Kategori || '-'}</td>
+                    <td>${item.Satuan || '-'}</td>
+                    <td>${formatRupiah(item.HargaSatuan || 0)}</td>
+                    <td><button class="action-btn btn-edit" onclick="editDataByMaster('${item.Kode}')">Pilih</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            console.error(e);
+            showMessage("Gagal memuat Master Data: " + e.message, 'error');
+        }
+    }
+
+    // MENGISI FORM INPUT DARI MASTER
+    async function editDataByMaster(kode) {
+        try {
+            const res = await safeFetch(`${scriptURL}?action=getMaster`);
+            const json = await res.json();
+            const item = json.data.find(d => d.Kode === kode);
+            if (item) {
+                document.getElementById('kode').value = item.Kode;
+                document.getElementById('namaItem').value = item.NamaItem;
+                document.getElementById('kategori').value = item.Kategori;
+                document.getElementById('satuan').value = item.Satuan;
+                document.getElementById('hargaSatuan').value = item.HargaSatuan;
+                showSection('section-input');
+            }
+        } catch (e) {
+            alert("Gagal memuat master");
+        }
+    }
+
+    // LOAD DATA & SUMMARY
     async function loadDataAndSummary() {
         const bulan = document.getElementById('filterBulan').value;
         const tahun = document.getElementById('filterTahun').value;
@@ -312,7 +347,7 @@
         }
     }
 
-    // Load Tabel (Saat menu Tabel diklik)
+    // LOAD TABEL
     async function loadTable() {
         const bulan = document.getElementById('filterBulanTabel').value;
         const tahun = document.getElementById('filterTahunTabel').value;
@@ -350,7 +385,7 @@
         });
     }
 
-    // Submit Data
+    // SUBMIT DATA
     async function submitData() {
         const formData = new URLSearchParams();
         formData.append('action', 'save');
@@ -366,14 +401,13 @@
             if (result.success) {
                 showMessage(result.message, 'success');
                 resetForm();
-                // Pindah ke Tabel Stok untuk melihat hasil
                 showSection('section-tabel');
                 loadTable();
             } else { showMessage(result.error || 'Gagal menyimpan data', 'error'); }
         } catch (error) { console.error(error); showMessage("Koneksi ke server gagal.", 'error'); }
     }
 
-    // Edit Data
+    // EDIT DATA
     async function editData(id) {
         if (!id) return alert("Data tidak valid");
         try {
@@ -398,13 +432,12 @@
                 document.getElementById('totalNilai').value = item.TotalNilai || 0;
                 document.getElementById('bulan').value = item.Bulan || '';
                 document.getElementById('tahun').value = item.Tahun || '';
-                // Pindah ke menu Input
                 showSection('section-input');
             }
         } catch (e) { alert("Gagal memuat data untuk diedit"); }
     }
 
-    // Delete Data
+    // DELETE DATA
     async function deleteData(id) {
         if(!confirm("Yakin ingin menghapus?")) return;
         const formData = new URLSearchParams();
@@ -418,7 +451,7 @@
         } catch (e) { showMessage("Koneksi gagal!", 'error'); }
     }
 
-    // Print Preview
+    // PRINT PREVIEW
     async function generatePrintPreview() {
         const bulan = document.getElementById('laporanBulan').value;
         const tahun = document.getElementById('laporanTahun').value;
@@ -470,13 +503,15 @@
         setTimeout(() => { msgDiv.textContent = ''; }, 5000);
     }
 
-    // Cek Session
+    // CEK SESSION & HAK AKSES
     const username = localStorage.getItem('username');
     const role = localStorage.getItem('userRole');
     const userDepo = localStorage.getItem('userDepo');
     if (!username || !role) { window.location.href = "index.html"; }
     else {
         document.getElementById('userLabel').innerText = `User: ${username} (${role})`;
+        
+        // KUNCI DEPO UNTUK USER IGD / RAWAT JALAN / DLL (Role Depo)
         if (role === 'depo' && userDepo) {
             document.getElementById('depo').value = userDepo;
             document.getElementById('depo').disabled = true;
@@ -486,10 +521,19 @@
             document.getElementById('filterDepoTabel').disabled = true;
             document.getElementById('laporanDepo').value = userDepo;
             document.getElementById('laporanDepo').disabled = true;
+            
+            // HIDDEN MENU MASTER DATA UNTUK NON-ADMIN
+            const masterMenu = document.getElementById('menu-master');
+            masterMenu.style.display = 'none';
+        }
+        
+        // Jika Admin, tampilkan menu Master Data
+        if (role === 'admin') {
+            document.getElementById('menu-master').style.display = 'block';
         }
     }
 
-    // Initial Load (Hanya Dashboard yang muncul)
+    // Initial Load
     window.onload = function() {
         const currentYear = new Date().getFullYear();
         document.getElementById('tahun').value = currentYear;
@@ -497,10 +541,7 @@
         document.getElementById('filterTahunTabel').value = currentYear;
         document.getElementById('laporanTahun').value = currentYear;
         
-        // Tampilkan menu Dashboard secara default
         showSection('section-dashboard');
-        
-        // Load data untuk Dashboard
         loadDataAndSummary();
     };
 </script>
