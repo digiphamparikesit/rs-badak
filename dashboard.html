@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Stock Opname.</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
-            onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';"></script>
+    <title>Dashboard Stock Opname</title>
     <style>
+        /* ================= RESET & LAYOUT ================= */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-
+        
         .app-container { display: flex; min-height: 100vh; }
-
+        
+        /* SIDEBAR (Menu Konsisten) */
         .sidebar {
             width: 250px;
             background-color: #2c3e50;
@@ -27,7 +27,8 @@
             border-bottom: 2px solid #1abc9c;
         }
         .sidebar-header h2 { font-size: 18px; margin: 0; }
-
+        .sidebar-header small { font-size: 11px; }
+        
         .sidebar-menu { flex: 1; padding-top: 10px; }
         .menu-item {
             display: block;
@@ -37,406 +38,301 @@
             cursor: pointer;
             border-bottom: 1px solid #34495e;
             transition: 0.3s;
-            background: none;
-            border: none;
-            width: 100%;
-            text-align: left;
             font-size: 14px;
         }
         .menu-item:hover { background-color: #34495e; padding-left: 25px; }
         .menu-item.active { background-color: #1abc9c; color: white; font-weight: bold; }
-
+        
         .sidebar-footer { padding: 20px; border-top: 1px solid #34495e; }
-
+        
+        /* KONTEN UTAMA */
         .main-content { flex: 1; padding: 20px; overflow-x: hidden; }
         .page-title { margin-bottom: 20px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        .page { display: none; }
-        .page.active-page { display: block; }
-        .section-title { margin: 10px 0 15px; color: #333; }
-
+        
+        /* NOTIFIKASI */
         #message { margin-bottom: 15px; text-align: center; font-weight: bold; }
-        .success { color: green; }
-        .error { color: red; }
-        .loading { color: #555; }
-
+        .success { color: green; } .error { color: red; } .loading { color: #555; }
+        
+        /* FILTER */
         .filter-section { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;}
         .filter-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
         .filter-group select, .filter-group input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 150px;}
         .btn-filter { background-color: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
         .btn-reset { background-color: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
-        .btn-export { background-color: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
-        .btn-print { background-color: #6f42c1; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
-
+        .btn-print { background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        
+        /* FORM INPUT */
         .form-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
         .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         .btn-submit { background-color: #0056b3; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-size: 16px; width: 100%; }
         .btn-cancel { background-color: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%; }
-
+        
+        /* SUMMARY CARDS */
         .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
         .card h3 { margin: 0 0 10px 0; font-size: 14px; color: #666; }
         .card p { margin: 0; font-size: 24px; font-weight: bold; color: #333; }
-
+        
+        /* TABEL DATA */
         .table-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
         th { background-color: #f2f2f2; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
         .action-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; font-size: 12px;}
         .btn-edit { background-color: #ffc107; color: white; }
         .btn-delete { background-color: #dc3545; color: white; }
-
-        .laporan-actions { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        /* ================= AREA PRINT PREVIEW (F4) ================= */
+        #printArea {
+            display: none; /* Disembunyikan di layar */
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+            }
+            @page {
+                size: F4 landscape; /* Ukuran F4/Folio Landscape */
+                margin: 10mm;
+            }
+        }
+        .print-layout {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12px;
+        }
+        .print-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+        }
+        .print-header h2 {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0 0 5px 0;
+        }
+        .print-header p { margin: 0; }
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .print-table th, .print-table td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+            font-size: 11px;
+        }
+        .print-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .print-footer {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-
-    <!-- SIDEBAR KIRI -->
+    
+    <!-- SIDEBAR (Konsisten 5 Menu) -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>Stock Opname</h2>
-            <small style="font-size: 11px;">Sistem Informasi</small>
+            <small>Sistem Informasi</small>
         </div>
-
         <nav class="sidebar-menu">
-            <button class="menu-item active" data-page="page-dashboard" onclick="showPage('page-dashboard', this)">📊 Dashboard / Rekap</button>
-            <button class="menu-item" data-page="page-input" onclick="showPage('page-input', this)">📝 Input Data</button>
-            <button class="menu-item" data-page="page-tabel" onclick="showPage('page-tabel', this)">📋 Tabel Stok</button>
-            <button class="menu-item" data-page="page-laporan" onclick="showPage('page-laporan', this)">🧾 Laporan Bulanan</button>
-            <button class="menu-item" id="menuMaster" data-page="page-master" onclick="showPage('page-master', this)" style="display:none;">🗂️ Master Data</button>
+            <a class="menu-item" onclick="scrollToSection('summaryCards')">📊 Dashboard / Rekap</a>
+            <a class="menu-item" onclick="scrollToSection('formSection')">📝 Input Data</a>
+            <a class="menu-item" onclick="scrollToSection('tableSection')">📋 Tabel Stok</a>
+            <a class="menu-item" onclick="scrollToSection('laporanSection')">📄 Laporan Bulanan</a>
+            <a class="menu-item" onclick="scrollToSection('masterSection')">🗂️ Master Data</a>
         </nav>
-
         <div class="sidebar-footer">
             <span id="userLabel" style="font-size: 12px; display: block; margin-bottom: 10px;">User: -</span>
-            <button class="btn-filter" style="width: 100%; background-color: #dc3545; color: white;" onclick="logout()">🚪 Logout</button>
+            <button class="btn-filter" style="width: 100%; background-color: #dc3545;" onclick="logout()">🚪 Logout</button>
         </div>
     </div>
 
     <!-- KONTEN UTAMA -->
     <div class="main-content">
-        <h2 class="page-title" id="pageHeaderTitle">Dashboard Stock Opname</h2>
-
+        <h2 class="page-title">Dashboard Stock Opname</h2>
         <div id="message"></div>
 
-        <!-- ================= PAGE: DASHBOARD / REKAP ================= -->
-        <div id="page-dashboard" class="page active-page">
-            <div id="filterSection" class="filter-section">
-                <div class="filter-group">
-                    <label>Bulan</label>
-                    <select id="filterBulan">
-                        <option value="">Semua</option>
-                        <option value="Januari">Januari</option><option value="Februari">Februari</option>
-                        <option value="Maret">Maret</option><option value="April">April</option>
-                        <option value="Mei">Mei</option><option value="Juni">Juni</option>
-                        <option value="Juli">Juli</option><option value="Agustus">Agustus</option>
-                        <option value="September">September</option><option value="Oktober">Oktober</option>
-                        <option value="November">November</option><option value="Desember">Desember</option>
-                    </select>
+        <!-- BAGIAN DASHBOARD / REKAP -->
+        <div id="summaryCards" class="summary-cards">
+            <div class="card"><h3>Total Item</h3><p id="totalItem">0</p></div>
+            <div class="card"><h3>Total Nilai</h3><p id="totalNilaiDisplay">Rp 0</p></div>
+            <div class="card"><h3>Total Obat</h3><p id="totalObat">Rp 0</p></div>
+            <div class="card"><h3>Total BMHP</h3><p id="totalBMHP">Rp 0</p></div>
+        </div>
+
+        <!-- BAGIAN INPUT DATA -->
+        <div id="formSection" class="form-section">
+            <h3 style="margin-bottom: 15px;">Input / Edit Data Stock</h3>
+            <form id="itemForm">
+                <input type="hidden" id="itemId">
+                <div class="form-grid">
+                    <div class="form-group"><label>Kode Barang</label><input type="text" id="kode" required></div>
+                    <div class="form-group"><label>Nama Item</label><input type="text" id="namaItem" required></div>
+                    <div class="form-group"><label>Kategori</label><select id="kategori"><option value="Obat">Obat</option><option value="BMHP">BMHP</option></select></div>
+                    <div class="form-group"><label>Depo</label><select id="depo"><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
+                    <div class="form-group"><label>Satuan</label><input type="text" id="satuan" required></div>
+                    <div class="form-group"><label>Stok Awal</label><input type="number" id="stokAwal" value="0" oninput="autoCalc()"></div>
+                    <div class="form-group"><label>Stok Masuk</label><input type="number" id="stokMasuk" value="0" oninput="autoCalc()"></div>
+                    <div class="form-group"><label>Stok Keluar</label><input type="number" id="stokKeluar" value="0" oninput="autoCalc()"></div>
+                    <div class="form-group"><label>Stok Akhir</label><input type="number" id="stokAkhir" value="0" readonly></div>
+                    <div class="form-group"><label>Harga Satuan</label><input type="number" id="hargaSatuan" value="0" oninput="autoCalc()"></div>
+                    <div class="form-group"><label>Total Nilai</label><input type="number" id="totalNilai" value="0" readonly></div>
                 </div>
-                <div class="filter-group">
-                    <label>Tahun</label>
-                    <input type="number" id="filterTahun" placeholder="Contoh: 2024">
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Bulan & Tahun</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="bulan" style="width: 50%;">
+                            <option>Januari</option><option>Februari</option><option>Maret</option><option>April</option>
+                            <option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option>
+                            <option>September</option><option>Oktober</option><option>November</option><option>Desember</option>
+                        </select>
+                        <input type="number" id="tahun" placeholder="2024" style="width: 50%;" required>
+                    </div>
                 </div>
-                <div class="filter-group">
-                    <label>Depo</label>
-                    <select id="filterDepo">
-                        <option value="">Semua</option>
-                        <option value="Depo Farmasi IGD">Depo Farmasi IGD</option>
-                        <option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option>
-                        <option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option>
-                        <option value="Depo Farmasi IBS">Depo Farmasi IBS</option>
-                    </select>
-                </div>
+                <button type="button" class="btn-submit" onclick="submitData()">Simpan Data</button>
+                <button type="button" class="btn-cancel" onclick="resetForm()">Bersihkan Form</button>
+            </form>
+        </div>
+
+        <!-- BAGIAN TABEL STOK -->
+        <div id="tableSection" class="table-section">
+            <h3>Data Stock Opname</h3>
+            <div class="filter-section" style="margin-top: 10px;">
+                <div class="filter-group"><label>Bulan</label><select id="filterBulan"><option value="">Semua</option><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
+                <div class="filter-group"><label>Tahun</label><input type="number" id="filterTahun" placeholder="2024"></div>
+                <div class="filter-group"><label>Depo</label><select id="filterDepo"><option value="">Semua</option><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
                 <button class="btn-filter" onclick="loadDataAndSummary()">Cari Data</button>
                 <button class="btn-reset" onclick="resetFilter()">Reset</button>
             </div>
+            <table><thead><tr><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Depo</th><th>Stok Akhir</th><th>Harga</th><th>Total Nilai</th><th>Aksi</th></tr></thead><tbody id="tableBody"></tbody></table>
+        </div>
 
-            <div id="summaryCards" class="summary-cards">
-                <div class="card"><h3>Total Item</h3><p id="totalItem">0</p></div>
-                <div class="card"><h3>Total Nilai</h3><p id="totalNilaiDisplay">Rp 0</p></div>
-                <div class="card"><h3>Total Obat</h3><p id="totalObat">Rp 0</p></div>
-                <div class="card"><h3>Total BMHP</h3><p id="totalBMHP">Rp 0</p></div>
-                <div class="card"><h3>Total B3</h3><p id="totalB3">Rp 0</p></div>
+        <!-- BAGIAN LAPORAN BULANAN (Fitur Print) -->
+        <div id="laporanSection" class="form-section">
+            <h3>Laporan Bulanan</h3>
+            <p style="margin-bottom: 15px; font-size: 14px; color: #666;">Pilih Bulan dan Tahun, lalu klik tombol Print untuk mencetak laporan sisa persediaan.</p>
+            
+            <div class="filter-section" style="padding: 0; box-shadow: none;">
+                <div class="filter-group"><label>Bulan</label><select id="laporanBulan"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select></div>
+                <div class="filter-group"><label>Tahun</label><input type="number" id="laporanTahun" placeholder="2024"></div>
+                <div class="filter-group"><label>Depo</label><select id="laporanDepo"><option value="">Semua</option><option value="Depo Farmasi IGD">Depo Farmasi IGD</option><option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option><option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option><option value="Depo Farmasi IBS">Depo Farmasi IBS</option></select></div>
+                <button class="btn-print" onclick="generatePrintPreview()">🖨️ Print Preview</button>
             </div>
         </div>
 
-        <!-- ================= PAGE: INPUT DATA ================= -->
-        <div id="page-input" class="page">
-            <div id="formSection" class="form-section">
-                <h3 class="section-title">Input / Edit Data Stock</h3>
-                <form id="itemForm">
-                    <input type="hidden" id="itemId">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Pilih dari Master Data (opsional)</label>
-                            <select id="pilihMaster" onchange="isiDariMaster()">
-                                <option value="">-- Ketik manual --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Kode Barang</label>
-                            <input type="text" id="kode" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nama Item</label>
-                            <input type="text" id="namaItem" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Kategori</label>
-                            <select id="kategori">
-                                <option value="Obat">Obat</option>
-                                <option value="BMHP">BMHP</option>
-                                <option value="B3">B3</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Depo</label>
-                            <select id="depo">
-                                <option value="Depo Farmasi IGD">Depo Farmasi IGD</option>
-                                <option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option>
-                                <option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option>
-                                <option value="Depo Farmasi IBS">Depo Farmasi IBS</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Satuan</label>
-                            <input type="text" id="satuan" placeholder="cth: Tablet, Box, Botol" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Stok Awal</label>
-                            <input type="number" id="stokAwal" value="0" oninput="autoCalc()">
-                        </div>
-                        <div class="form-group">
-                            <label>Stok Masuk</label>
-                            <input type="number" id="stokMasuk" value="0" oninput="autoCalc()">
-                        </div>
-                        <div class="form-group">
-                            <label>Stok Keluar</label>
-                            <input type="number" id="stokKeluar" value="0" oninput="autoCalc()">
-                        </div>
-                        <div class="form-group">
-                            <label>Stok Akhir (Otomatis)</label>
-                            <input type="number" id="stokAkhir" value="0" readonly style="background-color: #eee;">
-                        </div>
-                        <div class="form-group">
-                            <label>Harga Satuan</label>
-                            <input type="number" id="hargaSatuan" value="0" oninput="autoCalc()">
-                        </div>
-                        <div class="form-group">
-                            <label>Total Nilai (Otomatis)</label>
-                            <input type="number" id="totalNilai" value="0" readonly style="background-color: #eee;">
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 10px;">
-                        <label>Bulan & Tahun Penilaian</label>
-                        <div style="display: flex; gap: 10px;">
-                            <select id="bulan" style="width: 50%;">
-                                <option value="Januari">Januari</option><option value="Februari">Februari</option>
-                                <option value="Maret">Maret</option><option value="April">April</option>
-                                <option value="Mei">Mei</option><option value="Juni">Juni</option>
-                                <option value="Juli">Juli</option><option value="Agustus">Agustus</option>
-                                <option value="September">September</option><option value="Oktober">Oktober</option>
-                                <option value="November">November</option><option value="Desember">Desember</option>
-                            </select>
-                            <input type="number" id="tahun" placeholder="Tahun (cth: 2024)" style="width: 50%;" required>
-                        </div>
-                    </div>
-
-                    <button type="button" class="btn-submit" onclick="submitData()">Simpan Data</button>
-                    <button type="button" class="btn-cancel" onclick="resetForm()">Bersihkan Form</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ================= PAGE: TABEL STOK ================= -->
-        <div id="page-tabel" class="page">
-            <div id="tableSection" class="table-section">
-                <h3 class="section-title">Data Stock Opname</h3>
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Depo</th>
-                            <th>Stok Akhir</th><th>Harga</th><th>Total Nilai</th><th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ================= PAGE: LAPORAN BULANAN ================= -->
-        <div id="page-laporan" class="page">
-            <div class="filter-section">
-                <div class="filter-group">
-                    <label>Dari Bulan</label>
-                    <select id="lapBulanAwal">
-                        <option value="Januari">Januari</option><option value="Februari">Februari</option>
-                        <option value="Maret">Maret</option><option value="April">April</option>
-                        <option value="Mei">Mei</option><option value="Juni">Juni</option>
-                        <option value="Juli">Juli</option><option value="Agustus">Agustus</option>
-                        <option value="September">September</option><option value="Oktober">Oktober</option>
-                        <option value="November">November</option><option value="Desember">Desember</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Dari Tahun</label>
-                    <input type="number" id="lapTahunAwal">
-                </div>
-                <div class="filter-group">
-                    <label>Sampai Bulan</label>
-                    <select id="lapBulanAkhir">
-                        <option value="Januari">Januari</option><option value="Februari">Februari</option>
-                        <option value="Maret">Maret</option><option value="April">April</option>
-                        <option value="Mei">Mei</option><option value="Juni">Juni</option>
-                        <option value="Juli">Juli</option><option value="Agustus">Agustus</option>
-                        <option value="September">September</option><option value="Oktober">Oktober</option>
-                        <option value="November">November</option><option value="Desember">Desember</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Sampai Tahun</label>
-                    <input type="number" id="lapTahunAkhir">
-                </div>
-                <div class="filter-group">
-                    <label>Depo</label>
-                    <select id="lapDepo">
-                        <option value="">Semua</option>
-                        <option value="Depo Farmasi IGD">Depo Farmasi IGD</option>
-                        <option value="Depo Farmasi Rawat Jalan">Depo Farmasi Rawat Jalan</option>
-                        <option value="Depo Farmasi Rawat Inap">Depo Farmasi Rawat Inap</option>
-                        <option value="Depo Farmasi IBS">Depo Farmasi IBS</option>
-                    </select>
-                </div>
-                <button class="btn-filter" onclick="tampilkanLaporan()">Tampilkan</button>
-            </div>
-
-            <div id="laporanSummary" class="summary-cards" style="display:none;">
-                <div class="card"><h3>Total Item</h3><p id="lapTotalItem">0</p></div>
-                <div class="card"><h3>Total Nilai</h3><p id="lapTotalNilai">Rp 0</p></div>
-                <div class="card"><h3>Total Obat</h3><p id="lapTotalObat">Rp 0</p></div>
-                <div class="card"><h3>Total BMHP</h3><p id="lapTotalBMHP">Rp 0</p></div>
-                <div class="card"><h3>Total B3</h3><p id="lapTotalB3">Rp 0</p></div>
-            </div>
-
-            <div id="laporanActions" class="laporan-actions" style="display:none;">
-                <button class="btn-export" onclick="exportLaporanExcel()">⬇️ Export ke Excel</button>
-                <button class="btn-print" onclick="printPreviewLaporan()">🖨️ Print Preview</button>
-            </div>
-
-            <div class="table-section">
-                <h3 class="section-title">Detail Laporan</h3>
-                <table id="laporanTable">
-                    <thead>
-                        <tr>
-                            <th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Depo</th>
-                            <th>Periode</th><th>Stok Akhir</th><th>Satuan</th><th>Harga</th><th>Total Nilai</th>
-                        </tr>
-                    </thead>
-                    <tbody id="laporanTableBody">
-                        <tr><td colspan="9" style="text-align:center;">Pilih rentang tanggal lalu klik "Tampilkan"</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ================= PAGE: MASTER DATA (ADMIN) ================= -->
-        <div id="page-master" class="page">
-            <div class="form-section">
-                <h3 class="section-title">Upload Master Data (Excel/CSV)</h3>
-                <p style="font-size:13px; color:#666; margin-bottom:10px;">
-                    Kolom yang dibaca: <b>Kode</b>, <b>NamaItem</b>, <b>Kategori</b> (isi: Obat / BMHP / B3), <b>Satuan</b>, <b>HargaSatuanDefault</b>.
-                    Baris pertama file harus judul kolom. Kode yang sudah terdaftar akan otomatis dilewati.
-                </p>
-                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                    <input type="file" id="uploadMasterFile" accept=".xlsx,.xls,.csv">
-                    <button class="btn-filter" onclick="uploadMasterFile()">⬆️ Upload</button>
-                    <button class="btn-reset" onclick="downloadTemplateMaster()">⬇️ Download Template</button>
-                </div>
-                <div id="uploadResultBox" style="margin-top:15px; display:none;">
-                    <p id="uploadSummary" style="font-weight:bold;"></p>
-                    <ul id="uploadSkippedList" style="font-size:12px; color:#c0392b; max-height:150px; overflow:auto; margin-top:5px;"></ul>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h3 class="section-title">Input / Edit Master Data Barang (satuan)</h3>
-                <form id="masterForm">
-                    <input type="hidden" id="masterId">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Kode Barang</label>
-                            <input type="text" id="masterKode" required oninput="cekKodeMaster()">
-                            <small id="kodeCheckMsg" style="display:block; margin-top:4px;"></small>
-                        </div>
-                        <div class="form-group">
-                            <label>Nama Item</label>
-                            <input type="text" id="masterNama" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Kategori</label>
-                            <select id="masterKategori">
-                                <option value="Obat">Obat</option>
-                                <option value="BMHP">BMHP</option>
-                                <option value="B3">B3</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Satuan</label>
-                            <input type="text" id="masterSatuan" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Harga Satuan Default</label>
-                            <input type="number" id="masterHarga" value="0">
-                        </div>
-                    </div>
-                    <button type="button" class="btn-submit" onclick="submitMaster()">Simpan Data Master</button>
-                    <button type="button" class="btn-cancel" onclick="resetMasterForm()">Bersihkan Form</button>
-                </form>
-            </div>
-
-            <div class="table-section">
-                <h3 class="section-title">Daftar Master Data Barang</h3>
-                <table id="masterTable">
-                    <thead>
-                        <tr><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Satuan</th><th>Harga Default</th><th>Aksi</th></tr>
-                    </thead>
-                    <tbody id="masterTableBody"></tbody>
-                </table>
+        <!-- BAGIAN MASTER DATA -->
+        <div id="masterSection" class="form-section">
+            <h3>Master Data</h3>
+            <p style="color: #666; font-size: 14px;">Fitur ini digunakan untuk mengelola master obat (kode, nama, satuan, dll). Saat ini dalam pengembangan.</p>
+            <!-- Placeholder tabel master -->
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center; color: #888;">
+                <p><i>Silakan integrasikan tabel master obat di sini sesuai kebutuhan Anda.</i></p>
             </div>
         </div>
 
     </div>
 </div>
 
+<!-- ================= AREA PRINT PREVIEW (F4 LANDSCAPE) ================= -->
+<div id="printArea">
+    <div class="print-layout">
+        <div class="print-header">
+            <h2>LAPORAN SISA PERSEDIAAN OBAT DAN BMHP</h2>
+            <p id="printPeriode">Bulan: - Tahun: -</p>
+            <p id="printDepo">Depo: Semua</p>
+        </div>
+        
+        <table class="print-table" id="printTable">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 10%;">Kode</th>
+                    <th style="width: 30%;">Nama Item</th>
+                    <th style="width: 10%;">Kategori</th>
+                    <th style="width: 10%;">Satuan</th>
+                    <th style="width: 10%;">Stok Akhir</th>
+                    <th style="width: 15%;">Harga Satuan</th>
+                    <th style="width: 15%;">Total Nilai</th>
+                </tr>
+            </thead>
+            <tbody id="printBody"></tbody>
+            <tfoot>
+                <tr style="font-weight: bold; background-color: #f0f0f0;">
+                    <td colspan="5" style="text-align: right;">TOTAL</td>
+                    <td id="printTotalStok">0</td>
+                    <td></td>
+                    <td id="printTotalNilai">Rp 0</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="print-footer">
+            <p>Dicetak pada: <span id="printDate"></span></p>
+            <br>
+            <p>Mengetahui,</p>
+            <br><br><br>
+            <p>( ______________________ )</p>
+        </div>
+    </div>
+</div>
+
 <script>
-    // ⚠️ GANTI URL INI DENGAN URL HASIL DEPLOY TERBARU (harus berakhiran /exec)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzyJTb8wJuXWCQIh2vJUjMaFBHUWErT5Kaegx20AMA35z5EjyJk2ufo-g_hlIbGrVO8JA/exec';
+    // GANTI URL INI DENGAN URL /exec HASIL DEPLOY ANDA
+    const scriptURL = 'https://script.google.com/macros/s/URL_BARU_ANDA/exec';
+    
+    // Proxy Fallback
+    const proxyList = [
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url='
+    ];
 
-    const BULAN_LIST = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    const PAGE_TITLES = {
-        'page-dashboard': 'Dashboard Stock Opname',
-        'page-input': 'Input Data Stock',
-        'page-tabel': 'Tabel Data Stok',
-        'page-laporan': 'Laporan Bulanan',
-        'page-master': 'Master Data Barang'
-    };
+    async function safeFetch(url, options = {}) {
+        try {
+            let res = await fetch(url, options);
+            if (res.ok) return res;
+        } catch (e) {}
+        for (let proxy of proxyList) {
+            try {
+                const proxyUrl = proxy + encodeURIComponent(url);
+                let res = await fetch(proxyUrl, { ...options, headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } });
+                if (res.ok) return res;
+            } catch (e) {}
+        }
+        throw new Error("Koneksi gagal, periksa URL /exec");
+    }
 
-    let masterItems = [];
-    let laporanData = [];
-    let laporanPeriodeText = '';
+    // Scroll Menu
+    function scrollToSection(id) {
+        const el = document.getElementById(id);
+        if(el) el.scrollIntoView({ behavior: 'smooth' });
+    }
 
-    // Cek Session Login
+    // Session
     const username = localStorage.getItem('username');
     const role = localStorage.getItem('userRole');
     const userDepo = localStorage.getItem('userDepo');
-
+    
     if (!username || !role) {
-        alert("Anda belum login! Silakan login terlebih dahulu.");
         window.location.href = "index.html";
     } else {
         document.getElementById('userLabel').innerText = `User: ${username} (${role})`;
@@ -445,68 +341,22 @@
             document.getElementById('depo').disabled = true;
             document.getElementById('filterDepo').value = userDepo;
             document.getElementById('filterDepo').disabled = true;
-            document.getElementById('lapDepo').value = userDepo;
-            document.getElementById('lapDepo').disabled = true;
-        }
-        if (role === 'admin') {
-            document.getElementById('menuMaster').style.display = 'block';
+            document.getElementById('laporanDepo').value = userDepo;
+            document.getElementById('laporanDepo').disabled = true;
         }
     }
 
-    function logout() {
-        localStorage.clear();
-        window.location.href = "index.html";
-    }
+    function logout() { localStorage.clear(); window.location.href = "index.html"; }
 
-    // ================= NAVIGASI TAB (perbaikan menu sidebar) =================
-    function showPage(pageId, btnEl) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-        const target = document.getElementById(pageId);
-        if (target) target.classList.add('active-page');
-
-        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-        if (btnEl) btnEl.classList.add('active');
-
-        document.getElementById('pageHeaderTitle').innerText = PAGE_TITLES[pageId] || 'Dashboard';
-
-        if (pageId === 'page-master') {
-            if (role !== 'admin') {
-                showMessage('Halaman ini khusus untuk admin.', 'error');
-                return;
-            }
-            loadMasterData();
-        }
-    }
-
-    // ================= UTIL =================
-    function periodIndex(tahun, bulanName) {
-        const m = BULAN_LIST.indexOf(bulanName) + 1;
-        return (parseInt(tahun) || 0) * 12 + (m || 0);
-    }
-
-    function formatRupiah(angka) {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
-    }
-
-    function showMessage(msg, type) {
-        const msgDiv = document.getElementById('message');
-        msgDiv.className = type;
-        msgDiv.textContent = msg;
-        setTimeout(() => { msgDiv.textContent = ''; }, 5000);
-    }
-
-    // ================= INPUT DATA STOK =================
+    // Auto Calc
     function autoCalc() {
         const awal = parseFloat(document.getElementById('stokAwal').value) || 0;
         const masuk = parseFloat(document.getElementById('stokMasuk').value) || 0;
         const keluar = parseFloat(document.getElementById('stokKeluar').value) || 0;
         const harga = parseFloat(document.getElementById('hargaSatuan').value) || 0;
-
         const akhir = awal + masuk - keluar;
-        const total = akhir * harga;
-
         document.getElementById('stokAkhir').value = akhir;
-        document.getElementById('totalNilai').value = total;
+        document.getElementById('totalNilai').value = akhir * harga;
     }
 
     function resetForm() {
@@ -514,88 +364,84 @@
         document.getElementById('itemId').value = '';
         document.getElementById('stokAkhir').value = 0;
         document.getElementById('totalNilai').value = 0;
-        if (role === 'depo' && userDepo) document.getElementById('depo').value = userDepo;
     }
 
+    // Load Data & Summary
     async function loadDataAndSummary() {
         const bulan = document.getElementById('filterBulan').value;
         const tahun = document.getElementById('filterTahun').value;
         const depo = document.getElementById('filterDepo').value;
 
         try {
-            const summaryRes = await fetch(`${scriptURL}?action=getSummary&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
+            const summaryRes = await safeFetch(`${scriptURL}?action=getSummary&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const summary = await summaryRes.json();
-
+            
             document.getElementById('totalItem').innerText = summary.totalItem || 0;
             document.getElementById('totalNilaiDisplay').innerText = "Rp " + formatRupiah(summary.totalNilai || 0);
             document.getElementById('totalObat').innerText = "Rp " + formatRupiah(summary.totalObat || 0);
             document.getElementById('totalBMHP').innerText = "Rp " + formatRupiah(summary.totalBMHP || 0);
-            document.getElementById('totalB3').innerText = "Rp " + formatRupiah(summary.totalB3 || 0);
 
-            const dataRes = await fetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
+            const dataRes = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
             const dataJson = await dataRes.json();
-            renderTable(dataJson.data);
-
+            renderTable(dataJson.data || []);
         } catch (error) {
-            console.error('Error loading data:', error);
-            showMessage("Gagal mengambil data.", 'error');
+            console.error('Error:', error);
+            showMessage("Gagal mengambil data: " + error.message, 'error');
         }
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
-
         if (!data || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Belum ada data</td></tr>';
             return;
         }
-
         data.forEach(item => {
+            const id = item.ID || '';
+            const kode = item.Kode || '-';
+            const nama = item.NamaItem || '-';
+            const kategori = item.Kategori || '-';
+            const depo = item.Depo || '-';
+            const stok = item.StokAkhir || 0;
+            const harga = item.HargaSatuan || 0;
+            const total = item.TotalNilai || 0;
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${item.Kode || ''}</td>
-                <td>${item.NamaItem || ''}</td>
-                <td>${item.Kategori || ''}</td>
-                <td>${item.Depo || ''}</td>
-                <td>${item.StokAkhir || 0}</td>
-                <td>${formatRupiah(item.HargaSatuan || 0)}</td>
-                <td>${formatRupiah(item.TotalNilai || 0)}</td>
+                <td>${kode}</td><td>${nama}</td><td>${kategori}</td><td>${depo}</td>
+                <td>${stok}</td><td>${formatRupiah(harga)}</td><td>${formatRupiah(total)}</td>
                 <td>
-                    <button class="action-btn btn-edit" onclick="editData('${item.ID}')">Edit</button>
-                    <button class="action-btn btn-delete" onclick="deleteData('${item.ID}')">Hapus</button>
-                </td>
-            `;
+                    <button class="action-btn btn-edit" onclick="editData('${id}')">Edit</button>
+                    <button class="action-btn btn-delete" onclick="deleteData('${id}')">Hapus</button>
+                </td>`;
             tbody.appendChild(tr);
         });
     }
 
+    // Submit Data
     async function submitData() {
-        const bulan = document.getElementById('bulan').value;
-        const tahun = document.getElementById('tahun').value;
-
+        const formData = new URLSearchParams();
+        formData.append('action', 'save');
+        formData.append('bulan', document.getElementById('bulan').value);
+        formData.append('tahun', document.getElementById('tahun').value);
         const items = [{
             kode: document.getElementById('kode').value,
             namaItem: document.getElementById('namaItem').value,
             kategori: document.getElementById('kategori').value,
             depo: document.getElementById('depo').value,
             satuan: document.getElementById('satuan').value,
-            stokAwal: parseFloat(document.getElementById('stokAwal').value) || 0,
-            stokMasuk: parseFloat(document.getElementById('stokMasuk').value) || 0,
-            stokKeluar: parseFloat(document.getElementById('stokKeluar').value) || 0,
-            stokAkhir: parseFloat(document.getElementById('stokAkhir').value) || 0,
-            hargaSatuan: parseFloat(document.getElementById('hargaSatuan').value) || 0
+            stokAwal: document.getElementById('stokAwal').value,
+            stokMasuk: document.getElementById('stokMasuk').value,
+            stokKeluar: document.getElementById('stokKeluar').value,
+            stokAkhir: document.getElementById('stokAkhir').value,
+            hargaSatuan: document.getElementById('hargaSatuan').value
         }];
-
-        const formData = new URLSearchParams();
-        formData.append('action', 'save');
-        formData.append('bulan', bulan);
-        formData.append('tahun', tahun);
         formData.append('items', JSON.stringify(items));
 
         showMessage("Menyimpan data...", 'loading');
         try {
-            const response = await fetch(scriptURL, { method: 'POST', body: formData });
+            const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
             const result = await response.json();
             if (result.success) {
                 showMessage(result.message, 'success');
@@ -610,561 +456,132 @@
         }
     }
 
+    // Edit Data
     async function editData(id) {
-        const bulan = document.getElementById('filterBulan').value;
-        const tahun = document.getElementById('filterTahun').value;
-        const depo = document.getElementById('filterDepo').value;
-        const res = await fetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
-        const json = await res.json();
-        const item = json.data.find(d => d.ID === id);
-
-        if (item) {
-            document.getElementById('itemId').value = item.ID;
-            document.getElementById('kode').value = item.Kode;
-            document.getElementById('namaItem').value = item.NamaItem;
-            document.getElementById('kategori').value = item.Kategori;
-            document.getElementById('depo').value = item.Depo;
-            document.getElementById('satuan').value = item.Satuan;
-            document.getElementById('stokAwal').value = item.StokAwal;
-            document.getElementById('stokMasuk').value = item.StokMasuk;
-            document.getElementById('stokKeluar').value = item.StokKeluar;
-            document.getElementById('stokAkhir').value = item.StokAkhir;
-            document.getElementById('hargaSatuan').value = item.HargaSatuan;
-            document.getElementById('totalNilai').value = item.TotalNilai;
-            document.getElementById('bulan').value = item.Bulan;
-            document.getElementById('tahun').value = item.Tahun;
-
-            showPage('page-input', document.querySelector('[data-page="page-input"]'));
-        }
+        if (!id) return alert("Data tidak valid");
+        try {
+            const bulan = document.getElementById('filterBulan').value;
+            const tahun = document.getElementById('filterTahun').value;
+            const depo = document.getElementById('filterDepo').value;
+            const res = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
+            const json = await res.json();
+            const item = json.data.find(d => (d.ID || '') === id);
+            if (item) {
+                document.getElementById('itemId').value = item.ID || '';
+                document.getElementById('kode').value = item.Kode || '';
+                document.getElementById('namaItem').value = item.NamaItem || '';
+                document.getElementById('kategori').value = item.Kategori || '';
+                document.getElementById('depo').value = item.Depo || '';
+                document.getElementById('satuan').value = item.Satuan || '';
+                document.getElementById('stokAwal').value = item.StokAwal || 0;
+                document.getElementById('stokMasuk').value = item.StokMasuk || 0;
+                document.getElementById('stokKeluar').value = item.StokKeluar || 0;
+                document.getElementById('stokAkhir').value = item.StokAkhir || 0;
+                document.getElementById('hargaSatuan').value = item.HargaSatuan || 0;
+                document.getElementById('totalNilai').value = item.TotalNilai || 0;
+                document.getElementById('bulan').value = item.Bulan || '';
+                document.getElementById('tahun').value = item.Tahun || '';
+                scrollToSection('formSection');
+            }
+        } catch (e) { alert("Gagal memuat data untuk diedit"); }
     }
 
+    // Delete Data
     async function deleteData(id) {
-        if (!confirm("Yakin ingin menghapus data ini?")) return;
-
+        if(!confirm("Yakin ingin menghapus?")) return;
         const formData = new URLSearchParams();
         formData.append('action', 'delete');
         formData.append('id', id);
-
         try {
-            const response = await fetch(scriptURL, { method: 'POST', body: formData });
+            const response = await safeFetch(scriptURL, { method: 'POST', body: formData });
             const result = await response.json();
-            if (result.success) {
-                showMessage(result.message, 'success');
-                loadDataAndSummary();
-            } else {
-                showMessage(result.error || 'Gagal menghapus data', 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            showMessage("Koneksi ke server gagal!", 'error');
-        }
+            if (result.success) { showMessage(result.message, 'success'); loadDataAndSummary(); }
+            else showMessage(result.error || 'Gagal menghapus', 'error');
+        } catch (e) { showMessage("Koneksi gagal!", 'error'); }
     }
 
     function resetFilter() {
         document.getElementById('filterBulan').value = '';
         document.getElementById('filterTahun').value = '';
-        if (role !== 'depo') {
-            document.getElementById('filterDepo').value = '';
-        }
+        if (role !== 'depo') document.getElementById('filterDepo').value = '';
         loadDataAndSummary();
     }
 
-    // ================= MASTER DATA BARANG =================
-    async function loadMasterData() {
-        try {
-            const res = await fetch(`${scriptURL}?action=getMasterData`);
-            const json = await res.json();
-            masterItems = json.data || [];
-            renderMasterTable(masterItems);
-            fillMasterDropdownInInputForm();
-        } catch (err) {
-            console.error(err);
-            showMessage('Gagal memuat Master Data', 'error');
-        }
-    }
+    // ================= FUNGSI PRINT PREVIEW =================
+    async function generatePrintPreview() {
+        const bulan = document.getElementById('laporanBulan').value;
+        const tahun = document.getElementById('laporanTahun').value;
+        const depo = document.getElementById('laporanDepo').value;
 
-    function renderMasterTable(items) {
-        const tbody = document.getElementById('masterTableBody');
-        tbody.innerHTML = '';
-        if (!items.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data master</td></tr>';
-            return;
-        }
-        items.forEach(it => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${it.Kode}</td>
-                <td>${it.NamaItem}</td>
-                <td>${it.Kategori}</td>
-                <td>${it.Satuan}</td>
-                <td>${formatRupiah(it.HargaSatuanDefault)}</td>
-                <td>
-                    <button class="action-btn btn-edit" onclick="editMaster('${it.ID}')">Edit</button>
-                    <button class="action-btn btn-delete" onclick="deleteMasterItem('${it.ID}')">Hapus</button>
-                </td>`;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function fillMasterDropdownInInputForm() {
-        const sel = document.getElementById('pilihMaster');
-        if (!sel) return;
-        sel.innerHTML = '<option value="">-- Ketik manual --</option>';
-        masterItems.forEach(it => {
-            const opt = document.createElement('option');
-            opt.value = it.ID;
-            opt.textContent = `${it.Kode} - ${it.NamaItem}`;
-            sel.appendChild(opt);
-        });
-    }
-
-    function isiDariMaster() {
-        const id = document.getElementById('pilihMaster').value;
-        if (!id) return;
-        const item = masterItems.find(m => m.ID === id);
-        if (!item) return;
-        document.getElementById('kode').value = item.Kode;
-        document.getElementById('namaItem').value = item.NamaItem;
-        document.getElementById('kategori').value = item.Kategori;
-        document.getElementById('satuan').value = item.Satuan;
-        document.getElementById('hargaSatuan').value = item.HargaSatuanDefault;
-        autoCalc();
-    }
-
-    async function submitMaster() {
-        if (role !== 'admin') {
-            showMessage('Hanya admin yang dapat mengubah Master Data.', 'error');
-            return;
-        }
-        const id = document.getElementById('masterId').value;
-        const kode = document.getElementById('masterKode').value.trim();
-
-        // Cek duplikat di sisi klien dulu (data master sudah ter-load), supaya
-        // pengguna langsung tahu tanpa perlu round-trip ke server.
-        if (!id) {
-            const dup = masterItems.find(m => (m.Kode || '').toString().trim().toLowerCase() === kode.toLowerCase());
-            if (dup) {
-                showMessage(`Kode "${kode}" sudah terdaftar sebagai "${dup.NamaItem}". Gunakan kode lain atau edit data yang sudah ada.`, 'error');
-                return;
-            }
-        }
-
-        const formData = new URLSearchParams();
-        formData.append('action', id ? 'updateMaster' : 'saveMaster');
-        formData.append('role', role);
-        formData.append('id', id);
-        formData.append('kode', kode);
-        formData.append('namaItem', document.getElementById('masterNama').value.trim());
-        formData.append('kategori', document.getElementById('masterKategori').value);
-        formData.append('satuan', document.getElementById('masterSatuan').value.trim());
-        formData.append('hargaSatuanDefault', document.getElementById('masterHarga').value);
-
-        showMessage('Menyimpan data master...', 'loading');
-        try {
-            const res = await fetch(scriptURL, { method: 'POST', body: formData });
-            const result = await res.json();
-            if (result.success) {
-                showMessage(result.message, 'success');
-                resetMasterForm();
-                loadMasterData();
-            } else {
-                showMessage(result.message || 'Gagal menyimpan data master', 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            showMessage('Koneksi ke server gagal.', 'error');
-        }
-    }
-
-    // Cek apakah Kode Barang sudah ada di Master Data (real-time saat mengetik)
-    function cekKodeMaster() {
-        const kode = document.getElementById('masterKode').value.trim().toLowerCase();
-        const currentId = document.getElementById('masterId').value;
-        const msgEl = document.getElementById('kodeCheckMsg');
-
-        if (!kode) { msgEl.textContent = ''; return; }
-
-        const found = masterItems.find(m =>
-            (m.Kode || '').toString().trim().toLowerCase() === kode && m.ID !== currentId
-        );
-
-        if (found) {
-            msgEl.style.color = '#dc3545';
-            msgEl.textContent = `⚠️ Kode sudah terdaftar untuk "${found.NamaItem}"`;
-        } else {
-            msgEl.style.color = '#28a745';
-            msgEl.textContent = '✅ Kode tersedia';
-        }
-    }
-
-    function editMaster(id) {
-        const item = masterItems.find(m => m.ID === id);
-        if (!item) return;
-        document.getElementById('masterId').value = item.ID;
-        document.getElementById('masterKode').value = item.Kode;
-        document.getElementById('masterNama').value = item.NamaItem;
-        document.getElementById('masterKategori').value = item.Kategori;
-        document.getElementById('masterSatuan').value = item.Satuan;
-        document.getElementById('masterHarga').value = item.HargaSatuanDefault;
-    }
-
-    async function deleteMasterItem(id) {
-        if (role !== 'admin') {
-            showMessage('Hanya admin yang dapat menghapus Master Data.', 'error');
-            return;
-        }
-        if (!confirm('Yakin ingin menghapus data master ini?')) return;
-
-        const formData = new URLSearchParams();
-        formData.append('action', 'deleteMaster');
-        formData.append('role', role);
-        formData.append('id', id);
+        // Set Judul Periode
+        document.getElementById('printPeriode').innerText = `Bulan: ${bulan} Tahun: ${tahun}`;
+        document.getElementById('printDepo').innerText = `Depo: ${depo || 'Semua'}`;
+        document.getElementById('printDate').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
         try {
-            const res = await fetch(scriptURL, { method: 'POST', body: formData });
-            const result = await res.json();
-            if (result.success) {
-                showMessage(result.message, 'success');
-                loadMasterData();
-            } else {
-                showMessage(result.message || 'Gagal menghapus data master', 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            showMessage('Koneksi ke server gagal.', 'error');
-        }
-    }
+            // Ambil data untuk laporan
+            const dataRes = await safeFetch(`${scriptURL}?action=getData&bulan=${bulan}&tahun=${tahun}&depo=${depo}`);
+            const json = await dataRes.json();
+            const data = json.data || [];
 
-    function resetMasterForm() {
-        document.getElementById('masterForm').reset();
-        document.getElementById('masterId').value = '';
-        document.getElementById('kodeCheckMsg').textContent = '';
-    }
+            const tbody = document.getElementById('printBody');
+            tbody.innerHTML = '';
 
-    // ================= UPLOAD MASSAL MASTER DATA =================
-    function downloadTemplateMaster() {
-        if (typeof XLSX === 'undefined') {
-            showMessage('Library Excel belum termuat, coba muat ulang halaman lalu coba lagi.', 'error');
-            return;
-        }
-        const header = ['Kode', 'NamaItem', 'Kategori', 'Satuan', 'HargaSatuanDefault'];
-        const contoh = ['OBT-001', 'Paracetamol 500mg', 'Obat', 'Tablet', 500];
-        const ws = XLSX.utils.aoa_to_sheet([header, contoh]);
-        ws['!cols'] = header.map(() => ({ wch: 20 }));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Template');
-        XLSX.writeFile(wb, 'Template_Master_Data.xlsx');
-    }
+            let totalStok = 0;
+            let totalNilai = 0;
 
-    function uploadMasterFile() {
-        if (role !== 'admin') {
-            showMessage('Hanya admin yang dapat mengupload Master Data.', 'error');
-            return;
-        }
-        if (typeof XLSX === 'undefined') {
-            showMessage('Library pembaca Excel belum berhasil dimuat (kemungkinan koneksi internet bermasalah atau CDN diblokir jaringan Anda). Coba muat ulang halaman, atau periksa koneksi internet.', 'error');
-            return;
-        }
-        const fileInput = document.getElementById('uploadMasterFile');
-        const file = fileInput.files[0];
-        if (!file) {
-            showMessage('Pilih file Excel/CSV terlebih dahulu.', 'error');
-            return;
-        }
+            data.forEach((item, index) => {
+                const stok = item.StokAkhir || 0;
+                const harga = item.HargaSatuan || 0;
+                const nilai = item.TotalNilai || 0;
+                
+                totalStok += stok;
+                totalNilai += nilai;
 
-        const reader = new FileReader();
-
-        reader.onerror = function () {
-            showMessage('Gagal membaca file dari perangkat Anda. Coba pilih ulang filenya.', 'error');
-        };
-
-        reader.onload = function (e) {
-            let items;
-            try {
-                const dataArr = new Uint8Array(e.target.result);
-                const wb = XLSX.read(dataArr, { type: 'array' });
-                const firstSheet = wb.Sheets[wb.SheetNames[0]];
-                const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
-
-                if (!jsonRows.length) {
-                    showMessage('File berhasil dibaca, tapi tidak ada baris data (cek apakah hanya berisi header).', 'error');
-                    return;
-                }
-
-                // Normalisasi nama kolom supaya fleksibel terhadap variasi penulisan header
-                items = jsonRows.map(row => {
-                    const norm = {};
-                    Object.keys(row).forEach(k => {
-                        norm[k.toString().trim().toLowerCase().replace(/\s+/g, '')] = row[k];
-                    });
-                    return {
-                        kode: (norm['kode'] || '').toString().trim(),
-                        namaItem: (norm['namaitem'] || norm['nama'] || '').toString().trim(),
-                        kategori: (norm['kategori'] || '').toString().trim(),
-                        satuan: (norm['satuan'] || '').toString().trim(),
-                        hargaSatuanDefault: norm['hargasatuandefault'] || norm['harga'] || 0
-                    };
-                }).filter(it => it.kode || it.namaItem);
-
-                if (!items.length) {
-                    showMessage('Tidak ditemukan baris data yang valid. Pastikan kolom "Kode" dan "NamaItem" terisi.', 'error');
-                    return;
-                }
-            } catch (err) {
-                console.error('Gagal parsing file upload:', err);
-                showMessage(`Gagal membaca isi file: ${err.message || err}. Pastikan file tidak rusak/terkunci password, dan formatnya .xlsx, .xls, atau .csv.`, 'error');
-                return;
-            }
-
-            kirimBulkMaster(items, fileInput);
-        };
-
-        reader.readAsArrayBuffer(file);
-    }
-
-    async function kirimBulkMaster(items, fileInput) {
-        showMessage('Mengupload data master...', 'loading');
-        try {
-            const formData = new URLSearchParams();
-            formData.append('action', 'bulkSaveMaster');
-            formData.append('role', role);
-            formData.append('items', JSON.stringify(items));
-
-            const res = await fetch(scriptURL, { method: 'POST', body: formData });
-            const result = await res.json();
-
-            if (result.success) {
-                showMessage(result.message, 'success');
-                showUploadResult(result);
-                if (fileInput) fileInput.value = '';
-                loadMasterData();
-            } else {
-                showMessage(result.message || 'Gagal upload data master', 'error');
-            }
-        } catch (err) {
-            console.error('Gagal mengirim data ke server:', err);
-            showMessage(`Koneksi ke server gagal: ${err.message || err}`, 'error');
-        }
-    }
-
-    function showUploadResult(result) {
-        const box = document.getElementById('uploadResultBox');
-        const summary = document.getElementById('uploadSummary');
-        const list = document.getElementById('uploadSkippedList');
-
-        box.style.display = 'block';
-        summary.textContent = `Berhasil ditambahkan: ${result.added || 0} | Dilewati: ${(result.skipped || []).length}`;
-        list.innerHTML = '';
-        (result.skipped || []).forEach(s => {
-            const li = document.createElement('li');
-            li.textContent = `${s.kode} - ${s.alasan}`;
-            list.appendChild(li);
-        });
-    }
-
-    // ================= LAPORAN BULANAN =================
-    async function tampilkanLaporan() {
-        const bulanAwal = document.getElementById('lapBulanAwal').value;
-        const tahunAwal = document.getElementById('lapTahunAwal').value;
-        const bulanAkhir = document.getElementById('lapBulanAkhir').value;
-        const tahunAkhir = document.getElementById('lapTahunAkhir').value;
-        const depo = document.getElementById('lapDepo').value;
-
-        if (!tahunAwal || !tahunAkhir) {
-            showMessage('Isi Tahun Awal dan Tahun Akhir terlebih dahulu.', 'error');
-            return;
-        }
-
-        const startIdx = periodIndex(tahunAwal, bulanAwal);
-        const endIdx = periodIndex(tahunAkhir, bulanAkhir);
-        if (startIdx > endIdx) {
-            showMessage('Rentang tanggal tidak valid: periode awal harus sebelum atau sama dengan periode akhir.', 'error');
-            return;
-        }
-
-        showMessage('Memuat laporan...', 'loading');
-        try {
-            const res = await fetch(`${scriptURL}?action=getAllData`);
-            const json = await res.json();
-            let rows = json.data || [];
-
-            if (depo) rows = rows.filter(r => r.Depo === depo);
-            rows = rows.filter(r => {
-                const idx = periodIndex(r.Tahun, r.Bulan);
-                return idx >= startIdx && idx <= endIdx;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="text-align: center;">${index + 1}</td>
+                    <td>${item.Kode || '-'}</td>
+                    <td>${item.NamaItem || '-'}</td>
+                    <td>${item.Kategori || '-'}</td>
+                    <td>${item.Satuan || '-'}</td>
+                    <td style="text-align: right;">${stok}</td>
+                    <td style="text-align: right;">${formatRupiah(harga)}</td>
+                    <td style="text-align: right;">${formatRupiah(nilai)}</td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            laporanData = rows;
-            laporanPeriodeText = (startIdx === endIdx)
-                ? `${bulanAwal} ${tahunAwal}`
-                : `${bulanAwal} ${tahunAwal} s.d. ${bulanAkhir} ${tahunAkhir}`;
+            // Isi Total di baris akhir
+            document.getElementById('printTotalStok').innerText = totalStok;
+            document.getElementById('printTotalNilai').innerText = formatRupiah(totalNilai);
 
-            renderLaporanTable(rows);
-            renderLaporanSummary(rows);
+            // Jalankan Print
+            window.print();
 
-            document.getElementById('laporanSummary').style.display = 'grid';
-            document.getElementById('laporanActions').style.display = rows.length ? 'flex' : 'none';
-
-            showMessage(`Laporan dimuat: ${rows.length} data ditemukan.`, 'success');
-        } catch (err) {
-            console.error(err);
-            showMessage('Gagal memuat data laporan.', 'error');
+        } catch (error) {
+            console.error('Gagal membuat preview:', error);
+            alert("Gagal memuat data untuk laporan. Pastikan URL /exec benar dan koneksi stabil.");
         }
     }
 
-    function renderLaporanTable(rows) {
-        const tbody = document.getElementById('laporanTableBody');
-        tbody.innerHTML = '';
-        if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Tidak ada data pada rentang ini</td></tr>';
-            return;
-        }
-        rows.forEach(r => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${r.Kode || ''}</td>
-                <td>${r.NamaItem || ''}</td>
-                <td>${r.Kategori || ''}</td>
-                <td>${r.Depo || ''}</td>
-                <td>${r.Bulan || ''} ${r.Tahun || ''}</td>
-                <td>${r.StokAkhir || 0}</td>
-                <td>${r.Satuan || ''}</td>
-                <td>${formatRupiah(r.HargaSatuan || 0)}</td>
-                <td>${formatRupiah(r.TotalNilai || 0)}</td>`;
-            tbody.appendChild(tr);
-        });
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
     }
 
-    function renderLaporanSummary(rows) {
-        let totalNilai = 0, totalObat = 0, totalBMHP = 0, totalB3 = 0;
-        rows.forEach(r => {
-            const n = parseFloat(r.TotalNilai) || 0;
-            totalNilai += n;
-            const kat = (r.Kategori || '').toLowerCase();
-            if (kat === 'obat') totalObat += n;
-            else if (kat === 'bmhp') totalBMHP += n;
-            else if (kat === 'b3') totalB3 += n;
-        });
-        document.getElementById('lapTotalItem').innerText = rows.length;
-        document.getElementById('lapTotalNilai').innerText = 'Rp ' + formatRupiah(totalNilai);
-        document.getElementById('lapTotalObat').innerText = 'Rp ' + formatRupiah(totalObat);
-        document.getElementById('lapTotalBMHP').innerText = 'Rp ' + formatRupiah(totalBMHP);
-        document.getElementById('lapTotalB3').innerText = 'Rp ' + formatRupiah(totalB3);
+    function showMessage(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.className = type;
+        msgDiv.textContent = msg;
+        setTimeout(() => { msgDiv.textContent = ''; }, 5000);
     }
 
-    function judulLaporan() {
-        return `Laporan Sisa Persediaan Obat, BMHP dan B3 (${laporanPeriodeText})`;
-    }
-
-    function exportLaporanExcel() {
-        if (!laporanData.length) {
-            showMessage('Tidak ada data untuk diexport.', 'error');
-            return;
-        }
-
-        const judul = judulLaporan();
-        const header = ['Kode', 'Nama Item', 'Kategori', 'Depo', 'Bulan', 'Tahun', 'Stok Akhir', 'Satuan', 'Harga Satuan', 'Total Nilai'];
-        const rows = laporanData.map(r => [
-            r.Kode, r.NamaItem, r.Kategori, r.Depo, r.Bulan, r.Tahun,
-            r.StokAkhir, r.Satuan, r.HargaSatuan, r.TotalNilai
-        ]);
-
-        let totalNilai = 0;
-        laporanData.forEach(r => totalNilai += parseFloat(r.TotalNilai) || 0);
-
-        const aoa = [
-            [judul],
-            [`Dicetak: ${new Date().toLocaleString('id-ID')}`],
-            [],
-            header,
-            ...rows,
-            [],
-            ['', '', '', '', '', '', '', '', 'TOTAL', totalNilai]
-        ];
-
-        const ws = XLSX.utils.aoa_to_sheet(aoa);
-        ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: header.length - 1 } }];
-        ws['!cols'] = header.map(() => ({ wch: 18 }));
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Laporan');
-        XLSX.writeFile(wb, `Laporan_Persediaan_${laporanPeriodeText.replace(/\s+/g, '_')}.xlsx`);
-    }
-
-    function printPreviewLaporan() {
-        if (!laporanData.length) {
-            showMessage('Tidak ada data untuk dicetak.', 'error');
-            return;
-        }
-
-        const judul = judulLaporan();
-        let totalNilai = 0;
-        const rowsHtml = laporanData.map((r, i) => {
-            totalNilai += parseFloat(r.TotalNilai) || 0;
-            return `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td>${r.Kode || ''}</td>
-                    <td>${r.NamaItem || ''}</td>
-                    <td>${r.Kategori || ''}</td>
-                    <td>${r.Depo || ''}</td>
-                    <td>${r.Bulan || ''} ${r.Tahun || ''}</td>
-                    <td style="text-align:right;">${r.StokAkhir || 0}</td>
-                    <td>${r.Satuan || ''}</td>
-                    <td style="text-align:right;">${formatRupiah(r.HargaSatuan || 0)}</td>
-                    <td style="text-align:right;">${formatRupiah(r.TotalNilai || 0)}</td>
-                </tr>`;
-        }).join('');
-
-        const win = window.open('', '_blank');
-        win.document.write(`
-            <html>
-            <head>
-                <title>${judul}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; color: #222; }
-                    h2 { text-align: center; margin-bottom: 5px; }
-                    p.sub { text-align: center; margin-top: 0; color: #555; font-size: 13px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-                    th, td { border: 1px solid #333; padding: 6px; }
-                    th { background: #eee; }
-                    tfoot td { font-weight: bold; }
-                    .no-print { margin-top: 20px; text-align: center; }
-                    @media print { .no-print { display: none; } }
-                </style>
-            </head>
-            <body>
-                <h2>${judul}</h2>
-                <p class="sub">Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No</th><th>Kode</th><th>Nama Item</th><th>Kategori</th><th>Depo</th>
-                            <th>Periode</th><th>Stok Akhir</th><th>Satuan</th><th>Harga</th><th>Total Nilai</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rowsHtml}</tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="9" style="text-align:right;">TOTAL</td>
-                            <td style="text-align:right;">${formatRupiah(totalNilai)}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <div class="no-print">
-                    <button onclick="window.print()">🖨️ Cetak</button>
-                </div>
-            </body>
-            </html>
-        `);
-        win.document.close();
-    }
-
-    // Initial Load
-    window.onload = function () {
-        document.getElementById('tahun').value = new Date().getFullYear();
+    window.onload = function() {
+        const currentYear = new Date().getFullYear();
+        document.getElementById('tahun').value = currentYear;
+        document.getElementById('filterTahun').value = currentYear;
+        document.getElementById('laporanTahun').value = currentYear;
         loadDataAndSummary();
-        loadMasterData();
     };
 </script>
 </body>
