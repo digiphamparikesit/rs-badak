@@ -9,7 +9,6 @@
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .app-container { display: flex; min-height: 100vh; }
         
-        /* SIDEBAR */
         .sidebar { width: 250px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 20px; text-align: center; background-color: #34495e; border-bottom: 2px solid #1abc9c; }
         .sidebar-header h2 { font-size: 18px; margin: 0; }
@@ -19,15 +18,13 @@
         .menu-item.active { background-color: #1abc9c; color: white; font-weight: bold; }
         .sidebar-footer { padding: 20px; border-top: 1px solid #34495e; }
         
-        /* KONTEN UTAMA */
         .main-content { flex: 1; padding: 20px; overflow-x: hidden; }
         .page-title { margin-bottom: 20px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
         #message { margin-bottom: 15px; text-align: center; font-weight: bold; }
         .success { color: green; } .error { color: red; } .loading { color: #555; }
         
-        /* SISTEM MENU TAB (KUNCI PERUBAHAN) */
-        .section { display: none; } /* Semua menu disembunyikan default */
-        .section.active { display: block; } /* Hanya menu aktif yang muncul */
+        .section { display: none; }
+        .section.active { display: block; }
 
         .filter-section { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;}
         .filter-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
@@ -82,7 +79,7 @@
             <a class="menu-item" id="menu-input" onclick="showSection('section-input')">📝 Input Data</a>
             <a class="menu-item" id="menu-tabel" onclick="showSection('section-tabel')">📋 Tabel Stok</a>
             <a class="menu-item" id="menu-laporan" onclick="showSection('section-laporan')">📄 Laporan Bulanan</a>
-            <!-- Menu Master Data akan disembunyikan otomatis jika bukan Admin -->
+            <!-- Menu Master Data hanya muncul untuk Admin -->
             <a class="menu-item" id="menu-master" style="display: none;" onclick="showSection('section-master')">🗂️ Master Data</a>
         </nav>
         <div class="sidebar-footer">
@@ -120,6 +117,13 @@
                 <form id="itemForm">
                     <input type="hidden" id="itemId">
                     <div class="form-grid">
+                        <!-- Dropdown Master untuk Semua User -->
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Pilih dari Master Data (Otomatis Mengisi)</label>
+                            <select id="masterSelect" onchange="isiDariMaster()">
+                                <option value="">-- Pilih Barang --</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Kode Barang</label><input type="text" id="kode" required></div>
                         <div class="form-group"><label>Nama Item</label><input type="text" id="namaItem" required></div>
                         <div class="form-group"><label>Kategori</label><select id="kategori"><option value="Obat">Obat</option><option value="BMHP">BMHP</option></select></div>
@@ -177,7 +181,7 @@
             </div>
         </div>
 
-        <!-- SECTION 5: MASTER DATA (Hanya untuk Admin) -->
+        <!-- SECTION 5: MASTER DATA (HANYA UNTUK ADMIN) -->
         <div id="section-master" class="section">
             <div class="form-section">
                 <h3>Master Data Obat & BMHP</h3>
@@ -207,19 +211,12 @@
 </div>
 
 <script>
-    // URL TIDAK DIHAPUS SESUAI PERMINTAAN
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwcLhFx1_0BmQ8qUTEcOthMzDOzyujDSJlscH6QXKCb91L0sE1ksaKrAVXfjAN4j4D7xw/exec';
-    
-    const proxyList = [
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?'
-    ];
+    const proxyList = ['https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?'];
 
     async function safeFetch(url, options = {}) {
         let res;
-        try {
-            res = await fetch(url, options);
-        } catch (e) {
+        try { res = await fetch(url, options); } catch (e) {
             for (let proxy of proxyList) {
                 try {
                     const proxyUrl = proxy + encodeURIComponent(url);
@@ -229,34 +226,28 @@
             }
         }
         if (!res) throw new Error("Semua koneksi (langsung & proxy) gagal.");
-        if (!res.ok) throw new Error(`Server Error: ${res.status} (URL /exec mungkin 404)`);
+        if (!res.ok) throw new Error(`Server Error: ${res.status}`);
         const contentType = res.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
             await res.text();
-            throw new Error("Server tidak mengembalikan JSON. Pastikan akses Apps Script diset 'Siapa saja'.");
+            throw new Error("Server tidak mengembalikan JSON. Pastikan akses 'Siapa saja'.");
         }
         return res;
     }
 
-    // FUNGSI NAVIGASI MENU
     function showSection(sectionId) {
         const sections = document.querySelectorAll('.section');
         sections.forEach(section => section.classList.remove('active'));
-
         const activeSection = document.getElementById(sectionId);
         if (activeSection) activeSection.classList.add('active');
 
         const menus = document.querySelectorAll('.menu-item');
         menus.forEach(menu => menu.classList.remove('active'));
-        
         const activeMenuId = 'menu-' + sectionId.replace('section-', '');
         const activeMenu = document.getElementById(activeMenuId);
         if (activeMenu) activeMenu.classList.add('active');
 
-        // Khusus untuk Master Data: Muat data saat menu dibuka
-        if (sectionId === 'section-master') {
-            loadMasterData();
-        }
+        if (sectionId === 'section-master') loadMasterData();
     }
 
     function logout() { localStorage.clear(); window.location.href = "index.html"; }
@@ -278,7 +269,7 @@
         document.getElementById('totalNilai').value = 0;
     }
 
-    // LOAD MASTER DATA
+    // LOAD MASTER DATA (Untuk Menu Admin)
     async function loadMasterData() {
         try {
             const res = await safeFetch(`${scriptURL}?action=getMaster`);
@@ -309,23 +300,43 @@
         }
     }
 
-    // MENGISI FORM INPUT DARI MASTER
-    async function editDataByMaster(kode) {
+    // LOAD DROPDOWN MASTER (Untuk Semua User di Form Input)
+    async function loadMasterDropdown() {
         try {
             const res = await safeFetch(`${scriptURL}?action=getMaster`);
             const json = await res.json();
-            const item = json.data.find(d => d.Kode === kode);
-            if (item) {
-                document.getElementById('kode').value = item.Kode;
-                document.getElementById('namaItem').value = item.NamaItem;
-                document.getElementById('kategori').value = item.Kategori;
-                document.getElementById('satuan').value = item.Satuan;
-                document.getElementById('hargaSatuan').value = item.HargaSatuan;
-                showSection('section-input');
+            const select = document.getElementById('masterSelect');
+            select.innerHTML = '<option value="">-- Pilih Barang --</option>';
+            
+            if (json.data && json.data.length > 0) {
+                json.data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.Kode;
+                    opt.textContent = `${item.NamaItem} (${item.Kode})`;
+                    opt.dataset.nama = item.NamaItem || '';
+                    opt.dataset.kategori = item.Kategori || 'Obat';
+                    opt.dataset.satuan = item.Satuan || '';
+                    opt.dataset.harga = item.HargaSatuan || 0;
+                    select.appendChild(opt);
+                });
             }
         } catch (e) {
-            alert("Gagal memuat master");
+            console.error('Gagal memuat dropdown master:', e);
         }
+    }
+
+    // ISI FORM DARI DROPDOWN MASTER
+    function isiDariMaster() {
+        const select = document.getElementById('masterSelect');
+        const selected = select.selectedOptions[0];
+        if (!selected || selected.value === '') return;
+
+        document.getElementById('kode').value = selected.value;
+        document.getElementById('namaItem').value = selected.dataset.nama || '';
+        document.getElementById('kategori').value = selected.dataset.kategori || 'Obat';
+        document.getElementById('satuan').value = selected.dataset.satuan || '';
+        document.getElementById('hargaSatuan').value = selected.dataset.harga || 0;
+        autoCalc();
     }
 
     // LOAD DATA & SUMMARY
@@ -511,7 +522,6 @@
     else {
         document.getElementById('userLabel').innerText = `User: ${username} (${role})`;
         
-        // KUNCI DEPO UNTUK USER IGD / RAWAT JALAN / DLL (Role Depo)
         if (role === 'depo' && userDepo) {
             document.getElementById('depo').value = userDepo;
             document.getElementById('depo').disabled = true;
@@ -523,11 +533,9 @@
             document.getElementById('laporanDepo').disabled = true;
             
             // HIDDEN MENU MASTER DATA UNTUK NON-ADMIN
-            const masterMenu = document.getElementById('menu-master');
-            masterMenu.style.display = 'none';
+            document.getElementById('menu-master').style.display = 'none';
         }
         
-        // Jika Admin, tampilkan menu Master Data
         if (role === 'admin') {
             document.getElementById('menu-master').style.display = 'block';
         }
@@ -543,6 +551,7 @@
         
         showSection('section-dashboard');
         loadDataAndSummary();
+        loadMasterDropdown(); // PENTING: Muat dropdown untuk semua user
     };
 </script>
 </body>
